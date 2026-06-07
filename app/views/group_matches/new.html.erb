@@ -1,0 +1,10 @@
+<section class="page-header">
+  <div>
+    <h1>New group match</h1>
+    <p>Register a result or leave scores blank to create it as pending.</p>
+  </div>
+</section>
+
+<section class="card">
+  <%= render "form", match: @match, groups: @groups, teams: @teams %>
+</section>

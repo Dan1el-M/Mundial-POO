@@ -1,0 +1,47 @@
+<section class="page-header">
+  <div>
+    <h1>Qualified teams</h1>
+    <p>Top two teams from each group plus the eight best third-placed teams.</p>
+  </div>
+</section>
+
+<section class="grid">
+  <% @top_two_by_group.each do |group, teams| %>
+    <article class="card">
+      <h2>Group <%= group.letter %></h2>
+      <ol>
+        <% teams.each do |team| %>
+          <li><%= "#{team.name} (#{team.points} pts, GD #{team.goal_difference})" %></li>
+        <% end %>
+      </ol>
+    </article>
+  <% end %>
+</section>
+
+<section class="card">
+  <h2>Best third places</h2>
+  <ol>
+    <% @best_third_places.each do |team| %>
+      <li><%= "#{team.name} - #{team.points} pts / GD #{team.goal_difference} / GF #{team.goals_for}" %></li>
+    <% end %>
+  </ol>
+</section>
+
+<section class="card">
+  <h2>All qualified teams</h2>
+  <ol class="qualified-list">
+    <% @qualified_teams.each do |team| %>
+      <li><%= "#{team.name} (Group #{team.group.letter})" %></li>
+    <% end %>
+  </ol>
+
+  <div class="actions-inline">
+    <% if @bracket_ready && !@round_of_32_exists %>
+      <%= button_to "Generate knockout bracket", generate_bracket_tournament_path, method: :post, class: "button" %>
+    <% elsif @round_of_32_exists %>
+      <%= link_to "View knockout bracket", knockout_matches_path, class: "button" %>
+    <% else %>
+      <p class="muted">Complete all group standings to unlock the knockout bracket.</p>
+    <% end %>
+  </div>
+</section>

@@ -1,0 +1,21 @@
+<section class="page-header">
+  <div>
+    <h1>Groups</h1>
+    <p>Create, review and maintain the twelve tournament groups.</p>
+  </div>
+  <%= link_to "New group", new_group_path, class: "button" %>
+</section>
+
+<section class="grid">
+  <% @groups.each do |group| %>
+    <article class="card">
+      <h2>Group <%= group.letter %></h2>
+      <p><strong>Teams:</strong> <%= group.teams.count %>/4</p>
+      <div class="actions-inline">
+        <%= link_to "View", group_path(group), class: "button button-small" %>
+        <%= link_to "Edit", edit_group_path(group), class: "button button-small" %>
+        <%= button_to "Delete", group_path(group), method: :delete, class: "button button-danger button-small", form: { data: { turbo_confirm: "Delete Group #{group.letter}?" } } %>
+      </div>
+    </article>
+  <% end %>
+</section>

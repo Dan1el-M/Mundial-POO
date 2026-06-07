@@ -1,0 +1,48 @@
+<section class="page-header">
+  <div>
+    <h1>Knockout stage</h1>
+    <p>Track the bracket from the round of 32 to the final.</p>
+  </div>
+</section>
+
+<% if @matches_by_round.empty? %>
+  <section class="card">
+    <p>No knockout matches have been generated yet. Go to qualified teams and generate the bracket once 32 teams are available.</p>
+    <%= link_to "Qualified teams", qualified_tournament_path, class: "button" %>
+  </section>
+<% else %>
+  <% @matches_by_round.each do |round, matches| %>
+    <section class="card">
+      <h2><%= round.humanize %></h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Match</th>
+            <th>Result</th>
+            <th>Winner</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% matches.each do |match| %>
+            <tr>
+              <td><%= "#{match.home_team.name} vs #{match.away_team.name}" %></td>
+              <td>
+                <% if match.completed? %>
+                  <%= "#{match.home_score} - #{match.away_score}" %>
+                  <% if match.draw? %>
+                    <span class="muted">(<%= "Pen #{match.home_penalty_score} - #{match.away_penalty_score}" %>)</span>
+                  <% end %>
+                <% else %>
+                  Pending
+                <% end %>
+              </td>
+              <td><%= match.winner_team&.name || "-" %></td>
+              <td><%= link_to "Edit result", edit_knockout_match_path(match), class: "button button-small" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </section>
+  <% end %>
+<% end %>

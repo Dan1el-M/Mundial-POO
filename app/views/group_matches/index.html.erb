@@ -1,0 +1,44 @@
+<section class="page-header">
+  <div>
+    <h1>Group matches</h1>
+    <p>Register and maintain all matches from the group stage.</p>
+  </div>
+  <%= link_to "New group match", new_group_match_path, class: "button" %>
+</section>
+
+<% @groups.each do |group| %>
+  <section class="card">
+    <div class="section-title">
+      <h2>Group <%= group.letter %></h2>
+      <%= link_to "Add match", new_group_match_path(group_id: group.id), class: "button button-small" %>
+    </div>
+
+    <% if group.matches.any? %>
+      <table>
+        <thead>
+          <tr>
+            <th>Home</th>
+            <th>Score</th>
+            <th>Away</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% group.matches.each do |match| %>
+            <tr>
+              <td><%= match.home_team.name %></td>
+              <td><%= match.completed? ? "#{match.home_score} - #{match.away_score}" : "Pending" %></td>
+              <td><%= match.away_team.name %></td>
+              <td class="actions-inline">
+                <%= link_to "Edit", edit_group_match_path(match), class: "button button-small" %>
+                <%= button_to "Delete", group_match_path(match), method: :delete, class: "button button-danger button-small", form: { data: { turbo_confirm: "Delete this match?" } } %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p>No matches registered for this group yet.</p>
+    <% end %>
+  </section>
+<% end %>

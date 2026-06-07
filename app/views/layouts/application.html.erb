@@ -11,6 +11,26 @@
   </head>
 
   <body>
-    <%= yield %>
+    <header class="topbar">
+      <nav class="container nav">
+        <%= link_to "Standings", standings_tournament_path, class: "nav-link" %>
+        <%= link_to "Groups", groups_path, class: "nav-link" %>
+        <%= link_to "Teams", teams_path, class: "nav-link" %>
+        <%= link_to "Group Matches", group_matches_path, class: "nav-link" %>
+        <%= link_to "Qualified", qualified_tournament_path, class: "nav-link" %>
+        <%= link_to "Knockout", knockout_matches_path, class: "nav-link" %>
+        <%= link_to "Champion", champion_tournament_path, class: "nav-link" %>
+      </nav>
+    </header>
+
+    <main class="container">
+      <% flash.each do |type, message| %>
+        <section class="alert <%= type == "notice" ? "alert-success" : "alert-danger" %>">
+          <%= message %>
+        </section>
+      <% end %>
+
+      <%= yield %>
+    </main>
   </body>
 </html>
