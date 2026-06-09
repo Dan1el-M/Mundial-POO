@@ -1,36 +1,576 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>MundialPoo</title>
+    <title>Mundial POO</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800,900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "fifa-red": "#E30613",
+                    "fifa-navy": "#001b4d",
+                    "on-primary-fixed": "#001847",
+                    "on-tertiary-container": "#ff332b",
+                    "outline": "#757780",
+                    "primary-fixed-dim": "#b2c5ff",
+                    "surface-container-low": "#f5f3f8",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#544600",
+                    "surface-container-high": "#e9e7ec",
+                    "secondary-container": "#fcd400",
+                    "on-background": "#1b1b1f",
+                    "secondary-fixed-dim": "#e9c400",
+                    "primary-fixed": "#dae2ff",
+                    "on-primary-container": "#7185bc",
+                    "outline-variant": "#c5c6d0",
+                    "surface-dim": "#dbd9de",
+                    "inverse-on-surface": "#f2f0f5",
+                    "inverse-surface": "#303034",
+                    "surface-container-highest": "#e3e2e7",
+                    "primary-container": "#001b4d",
+                    "on-surface-variant": "#44464f",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-bright": "#faf8fe",
+                    "secondary": "#705d00",
+                    "on-primary-fixed-variant": "#304578",
+                    "on-surface": "#1b1b1f",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#efedf2",
+                    "tertiary-container": "#460001",
+                    "on-tertiary-fixed": "#410001",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed": "#ffdad5",
+                    "secondary-fixed": "#ffe16d",
+                    "surface-tint": "#495d91",
+                    "primary": "#000417",
+                    "on-tertiary-fixed-variant": "#930007",
+                    "on-secondary-container": "#6e5c00",
+                    "on-error-container": "#93000a",
+                    "on-secondary-fixed": "#221b00",
+                    "background": "#faf8fe",
+                    "surface-variant": "#e3e2e7",
+                    "inverse-primary": "#b2c5ff",
+                    "tertiary-fixed-dim": "#ffb4aa",
+                    "tertiary": "#140000",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface": "#faf8fe",
+                    "on-error": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "container-padding": "24px",
+                    "section-margin": "48px",
+                    "gutter": "16px",
+                    "base": "8px",
+                    "card-gap": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Montserrat"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Montserrat"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Montserrat"],
+                    "title-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Montserrat"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+
+    <style>
+      body {
+          background-color: #F8F9FA;
+          font-family: 'Inter', sans-serif;
+          color: #1b1b1f;
+      }
+      .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .sidebar-active {
+          scale: 0.95;
+          transition: transform 0.150s;
+      }
+      .brand-text {
+          letter-spacing: -0.02em;
+      }
+      /* Custom scrollbar for data density */
+      ::-webkit-scrollbar {
+          width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+          background: #f1f1f1;
+      }
+      ::-webkit-scrollbar-thumb {
+          background: #c5c6d0;
+          border-radius: 10px;
+      }
+    </style>
   </head>
 
   <body>
-    <header class="topbar">
-      <nav class="container nav">
-        <%= link_to "Standings", standings_tournament_path, class: "nav-link" %>
-        <%= link_to "Groups", groups_path, class: "nav-link" %>
-        <%= link_to "Teams", teams_path, class: "nav-link" %>
-        <%= link_to "Group Matches", group_matches_path, class: "nav-link" %>
-        <%= link_to "Qualified", qualified_tournament_path, class: "nav-link" %>
-        <%= link_to "Knockout", knockout_matches_path, class: "nav-link" %>
-        <%= link_to "Champion", champion_tournament_path, class: "nav-link" %>
-      </nav>
+    <!-- Header -->
+    <header class="fixed top-0 left-0 w-full z-50 flex items-center px-container-padding h-16 bg-black shadow-md">
+      <div class="flex items-center gap-4">
+        <span class="font-headline-md text-headline-md font-bold text-on-primary brand-text">Gestión de la Copa Mundial FIFA 2026</span>
+      </div>
     </header>
 
-    <main class="container">
-      <% flash.each do |type, message| %>
-        <section class="alert <%= type == "notice" ? "alert-success" : "alert-danger" %>">
-          <%= message %>
-        </section>
-      <% end %>
+    <!-- Modals -->
+    <div id="group-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div class="w-full max-w-lg rounded-3xl bg-white shadow-2xl overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-outline-variant bg-surface-container-high">
+          <div>
+            <h2 class="font-title-lg text-title-lg text-primary-container">Agregar Grupo</h2>
+            <p class="text-sm text-on-surface-variant">Selecciona un grupo disponible para sumar al torneo.</p>
+          </div>
+          <button type="button" onclick="closeGroupModal()" class="text-on-surface-variant hover:text-on-surface transition-colors">
+            <span class="material-symbols-outlined text-2xl">close</span>
+          </button>
+        </div>
+        <div class="p-6">
+          <form id="group-add-form" class="space-y-4">
+            <div class="space-y-2">
+              <label for="group-select" class="font-label-sm text-label-sm text-on-surface-variant block">Grupo disponible</label>
+              <select id="group-select" name="group[letter]" class="w-full border-outline-variant rounded-lg p-3 bg-surface-container-low focus:ring-2 focus:ring-primary-fixed transition-all font-semibold">
+                <option value="">Seleccione un grupo</option>
+              </select>
+            </div>
+            <div class="flex justify-end gap-3">
+              <button type="button" onclick="closeGroupModal()" class="px-4 py-3 rounded-lg bg-primary-container text-white font-bold hover:bg-primary-container transition-colors">Cancelar</button>
+              <button type="submit" class="px-4 py-3 rounded-lg bg-[#E30613] text-white font-bold hover:bg-[#c00510] transition-colors">Agregar Grupo</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
+    <div id="notification-drawer" class="hidden fixed right-6 top-20 z-50 w-80 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-2xl">
+      <div class="p-4 border-b border-outline-variant flex items-center justify-between bg-primary-container text-white rounded-t-xl">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-xl">info</span>
+          <h3 class="font-headline-md text-sm font-bold tracking-tight">Notificación del sistema</h3>
+        </div>
+        <button type="button" class="hover:bg-white/10 p-1 rounded-full" onclick="document.getElementById('notification-drawer').classList.add('hidden')">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+      <div class="p-4">
+        <div class="flex gap-3">
+          <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+          </div>
+          <div class="flex-grow">
+            <p id="notification-title" class="font-body-md text-body-md text-on-surface font-semibold">Cambios guardados</p>
+            <p id="notification-message" class="font-body-md text-xs text-on-surface-variant mt-1">La operación se completó correctamente.</p>
+            <div class="flex items-center gap-1 mt-3 text-[10px] text-outline uppercase font-bold">
+              <span class="material-symbols-outlined text-[12px]">schedule</span>
+              <span>Hace un momento</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="px-4 py-3 bg-surface-container-low rounded-b-xl flex justify-end">
+        <button type="button" class="text-xs font-bold text-primary-container hover:underline" onclick="document.getElementById('notification-drawer').classList.add('hidden')">Entendido</button>
+      </div>
+    </div>
+
+    <div id="delete-team-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4">
+      <div class="relative w-full max-w-md bg-surface-container-lowest rounded-3xl shadow-2xl overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-outline-variant bg-surface-bright">
+          <div>
+            <h2 class="font-headline-md text-headline-md text-primary-container tracking-tight">¿Eliminar Selección?</h2>
+            <p class="text-sm text-on-surface-variant mt-1">Esta acción no se puede deshacer.</p>
+          </div>
+          <button type="button" onclick="closeDeleteModal()" class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div class="p-6 space-y-4">
+          <p class="text-on-surface-variant font-body-md">¿Estás seguro de que deseas eliminar a <span id="delete-team-name" class="font-bold text-on-surface"></span> del <span id="delete-team-group" class="font-bold text-on-surface"></span>? Esta acción no se puede deshacer.</p>
+          <div class="p-4 bg-error-container/20 rounded-lg flex items-start gap-4 border border-error/20">
+            <span class="material-symbols-outlined text-error">warning</span>
+            <p class="text-label-sm font-label-sm text-error">Se perderán todos los datos estadísticos asociados a esta selección en la fase actual.</p>
+          </div>
+        </div>
+        <div class="px-6 py-6 bg-surface-container-low flex flex-col sm:flex-row-reverse gap-3">
+          <form id="delete-team-form" action="#" method="post" class="w-full sm:w-auto" data-turbo="false">
+            <input type="hidden" name="_method" value="delete">
+            <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+            <button type="submit" class="w-full sm:w-auto px-8 h-12 bg-error text-on-primary font-bold text-body-lg rounded-lg shadow-md hover:bg-[#c00510] transition-all active:scale-95 flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-[20px]">delete</span>
+              Eliminar
+            </button>
+          </form>
+          <button type="button" onclick="closeDeleteModal()" class="w-full sm:w-auto px-8 h-12 bg-transparent border border-outline text-on-surface-variant font-bold text-body-lg rounded-lg hover:bg-surface-container-highest transition-all">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="edit-team-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4">
+      <div class="relative w-full max-w-lg bg-surface-container-lowest rounded-3xl shadow-2xl overflow-hidden">
+        <div class="px-6 py-6 flex items-center justify-between bg-primary-container text-on-primary-container border-b border-outline-variant">
+          <h1 id="edit-team-modal-title" class="font-headline-md text-headline-md">Modificar Selección</h1>
+          <button type="button" onclick="closeEditModal()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-on-primary-container/10 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form id="edit-team-form" action="#" method="post" class="p-6 space-y-6" data-turbo="false">
+          <input type="hidden" name="_method" value="patch">
+          <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+
+          <div class="space-y-5">
+            <div class="space-y-1.5">
+              <label class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" for="edit-team-name-input">Nombre del País <span class="text-error">*</span></label>
+              <div class="relative group">
+                <input id="edit-team-name-input" name="team[name]" class="w-full h-12 bg-surface px-4 rounded-lg border border-outline outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md text-on-surface" placeholder="Ingrese el nombre oficial" type="text" />
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant">public</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label class="font-label-sm text-label-sm text-on-surface-variant" for="edit-team-acronym-input">Acrónimo <span class="text-error">*</span></label>
+                <input id="edit-team-acronym-input" name="team[acronym]" maxlength="3" class="w-full h-12 bg-surface px-4 rounded-lg border border-outline outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md text-on-surface uppercase" placeholder="Ej. MEX" type="text" />
+              </div>
+              <div class="space-y-1.5">
+                <label class="font-label-sm text-label-sm text-on-surface-variant" for="edit-team-group-input">Grupo Asignado</label>
+                <div class="relative">
+                  <select id="edit-team-group-input" name="team[group_id]" disabled class="w-full h-12 bg-surface/70 px-4 rounded-lg border border-outline outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md text-on-surface cursor-not-allowed">
+                    <option value="">Seleccione un grupo</option>
+                  </select>
+                  <input type="hidden" id="edit-team-group-hidden" name="team[group_id]" value="">
+                  <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">lock</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="pt-6 flex flex-col sm:flex-row gap-3 border-t border-outline-variant mt-4">
+            <button type="button" onclick="closeEditModal()" class="flex-1 h-12 flex items-center justify-center text-fifa-navy border-2 border-fifa-navy rounded-lg hover:bg-fifa-navy/5 transition-all">Cancelar</button>
+            <button type="submit" class="flex-1 h-12 flex items-center justify-center bg-fifa-red text-white border-2 border-fifa-red rounded-lg hover:opacity-90 shadow-lg shadow-fifa-red/20 active:scale-95 transition-all">Guardar Cambios</button>
+          </div>
+        </form>
+        <div class="px-6 py-3 bg-surface-container-low flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px] text-on-surface-variant">info</span>
+          <p class="font-label-sm text-label-sm text-on-surface-variant italic">Última modificación hace 2 horas por Admin_FIFA</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="fixed left-0 top-16 bottom-0 w-64 flex flex-col py-4 z-40 bg-primary-container border-r border-outline-variant">
+      <div class="px-6 mb-8">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-primary-container flex items-center justify-center rounded-lg">
+            <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">sports_soccer</span>
+          </div>
+          <div>
+            <h2 class="font-headline-lg text-headline-lg text-white font-black leading-none">FIFA 2026</h2>
+          </div>
+        </div>
+      </div>
+      <nav class="flex-grow flex flex-col gap-1 overflow-y-auto">
+        <a class="flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all" href="#">
+          <span class="material-symbols-outlined">dashboard</span>
+          <span class="font-label-sm text-label-sm">Panel de Control</span>
+        </a>
+        <%= link_to teams_path, class: 'flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all nav-link' do %>
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+          <span class="font-label-sm text-label-sm">Grupos y Equipos</span>
+        <% end %>
+        <a class="flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all" href="#">
+          <span class="material-symbols-outlined">calendar_month</span>
+          <span class="font-label-sm text-label-sm">Calendario</span>
+        </a>
+        <a class="flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all" href="#">
+          <span class="material-symbols-outlined">account_tree</span>
+          <span class="font-label-sm text-label-sm">Fase Eliminatoria</span>
+        </a>
+        <a class="flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all" href="#">
+          <span class="material-symbols-outlined">leaderboard</span>
+          <span class="font-label-sm text-label-sm">Estadísticas</span>
+        </a>
+        <%= link_to group_matches_path, class: 'flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all nav-link' do %>
+          <span class="material-symbols-outlined">sports_soccer</span>
+          <span class="font-label-sm text-label-sm">Partidos</span>
+        <% end %>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 mt-16 p-base md:p-container-padding min-h-screen">
       <%= yield %>
     </main>
+
+    <!-- FAB Button (visible on mobile) -->
+    <button type="button" onclick="openGroupModal()" class="fixed bottom-8 right-8 w-16 h-16 bg-[#E30613] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform z-50 md:hidden">
+      <span class="material-symbols-outlined text-3xl">add</span>
+    </button>
+
+    <!-- Global Scripts -->
+    <script>
+      const groupModal = document.getElementById('group-modal');
+      const groupSelect = document.getElementById('group-select');
+      const teamGroupSelect = document.getElementById('edit-team-group-input');
+      const groupFilterButtons = document.getElementById('group-filter-buttons');
+      const groupCardGrid = document.getElementById('group-card-grid');
+      const notificationDrawer = document.getElementById('notification-drawer');
+      const notificationTitle = document.getElementById('notification-title');
+      const notificationMessage = document.getElementById('notification-message');
+      const deleteTeamModal = document.getElementById('delete-team-modal');
+      const deleteTeamName = document.getElementById('delete-team-name');
+      const deleteTeamGroup = document.getElementById('delete-team-group');
+      const deleteTeamForm = document.getElementById('delete-team-form');
+      const editTeamModal = document.getElementById('edit-team-modal');
+      const editTeamForm = document.getElementById('edit-team-form');
+      const editTeamNameInput = document.getElementById('edit-team-name-input');
+      const editTeamAcronymInput = document.getElementById('edit-team-acronym-input');
+      const editTeamGroupInput = document.getElementById('edit-team-group-input');
+
+      const ALL_GROUP_LETTERS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+
+      function openGroupModal() {
+        if (groupModal) {
+          groupModal.classList.remove('hidden');
+        }
+      }
+
+      function closeGroupModal() {
+        if (groupModal) {
+          groupModal.classList.add('hidden');
+        }
+      }
+
+      function closeDeleteModal() {
+        if (deleteTeamModal) deleteTeamModal.classList.add('hidden');
+      }
+
+      function openDeleteTeamModal(row) {
+        if (!row || !deleteTeamModal) return;
+        const teamId = row.dataset.teamId;
+        deleteTeamName.textContent = row.dataset.teamName || 'esta selección';
+        deleteTeamGroup.textContent = row.dataset.teamGroupLetter || 'Grupo';
+        deleteTeamForm.action = `/teams/${teamId}`;
+        deleteTeamModal.classList.remove('hidden');
+      }
+
+      function closeEditModal() {
+        if (editTeamModal) editTeamModal.classList.add('hidden');
+      }
+
+      function openEditTeamModal(row) {
+        if (!row || !editTeamModal) return;
+        const teamId = row.dataset.teamId;
+        editTeamNameInput.value = row.dataset.teamName || '';
+        editTeamAcronymInput.value = row.dataset.teamAcronym || '';
+        editTeamGroupInput.value = row.dataset.teamGroupId || '';
+        const groupHidden = document.getElementById('edit-team-group-hidden');
+        if (groupHidden) groupHidden.value = row.dataset.teamGroupId || '';
+        editTeamForm.action = `/teams/${teamId}`;
+        editTeamModal.classList.remove('hidden');
+      }
+
+      function showNotification(title, message, type = 'success') {
+        if (!notificationDrawer || !notificationTitle || !notificationMessage) return;
+
+        notificationTitle.textContent = title;
+        notificationMessage.textContent = message;
+
+        const iconContainer = notificationDrawer.querySelector('.w-10.h-10');
+        const icon = iconContainer.querySelector('.material-symbols-outlined');
+
+        if (type === 'alert') {
+          iconContainer.className = 'w-10 h-10 rounded-full bg-error-container flex items-center justify-center flex-shrink-0';
+          icon.className = 'material-symbols-outlined text-error';
+          icon.textContent = 'warning';
+        } else {
+          iconContainer.className = 'w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0';
+          icon.className = 'material-symbols-outlined text-emerald-600';
+          icon.textContent = 'check_circle';
+        }
+
+        notificationDrawer.classList.remove('hidden');
+        setTimeout(() => notificationDrawer.classList.add('hidden'), 4500);
+      }
+
+      function buildGroupSelectOptions(selectEl, groups, useIdValue = false) {
+        if (!selectEl) return;
+        const options = groups.map(group => {
+          const value = useIdValue ? group.id : group.letter;
+          return `<option value="${value}">Grupo ${group.letter}</option>`;
+        }).join('');
+        const placeholder = '<option value="">Seleccione un grupo</option>';
+        selectEl.innerHTML = placeholder + options;
+      }
+
+      function updateGroupsUI(groups) {
+        if (!groups || !Array.isArray(groups)) return;
+        const orderedGroups = groups.slice().sort((a, b) => a.letter.localeCompare(b.letter));
+
+        if (groupFilterButtons) {
+          groupFilterButtons.innerHTML = '<span class="text-xs font-bold text-on-surface-variant uppercase px-2">Filtrar:</span>' +
+            '<button type="button" data-group-letter="all" class="whitespace-nowrap px-4 py-1.5 rounded-full bg-primary-container text-white text-sm font-semibold">Todos</button>' +
+            orderedGroups.map(group => {
+              return `<button type="button" data-group-letter="${group.letter}" class="whitespace-nowrap px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant text-sm hover:bg-outline-variant transition-colors">Grupo ${group.letter}</button>`;
+            }).join('');
+        }
+
+        if (groupCardGrid) {
+          groupCardGrid.innerHTML = orderedGroups.map(group => {
+            const teamNames = (group.teams || []).slice(0, 4).map(team => {
+              return team.acronym && team.acronym.trim().length > 0 ? team.acronym.toUpperCase() : team.name.substring(0, 3).toUpperCase();
+            }).join(', ');
+            return `
+              <div class="bg-white p-4 rounded-xl border-l-4 border-primary-container shadow-sm flex flex-col justify-between h-32">
+                <div class="flex justify-between items-start">
+                  <span class="font-headline-md text-label-sm uppercase text-on-surface-variant">Grupo ${group.letter}</span>
+                  <span class="text-xs font-bold text-on-primary-container bg-primary-fixed px-2 py-0.5 rounded">${group.teams.length}/4</span>
+                </div>
+                <div class="text-xs text-on-surface-variant mt-2 flex flex-col gap-1">
+                  <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> ${teamNames}</div>
+                </div>
+                <button type="button" class="text-xs font-bold text-primary-container mt-auto hover:underline text-left">Ver detalles →</button>
+              </div>`;
+          }).join('') + `
+            <button type="button" onclick="openGroupModal()" class="group p-4 rounded-xl border-2 border-dashed border-outline-variant hover:border-primary-fixed-dim transition-all flex flex-col items-center justify-center gap-2 bg-surface-container-low/50 h-32">
+              <div class="w-8 h-8 rounded-full bg-outline-variant/30 flex items-center justify-center group-hover:bg-primary-fixed group-hover:scale-110 transition-all">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary-container">add</span>
+              </div>
+              <span class="text-xs font-bold text-on-surface-variant">Nuevo Grupo</span>
+            </button>
+          `;
+        }
+
+        const usedLetters = orderedGroups.map(group => group.letter);
+        const availableLetters = ALL_GROUP_LETTERS.filter(letter => !usedLetters.includes(letter));
+        if (groupSelect) {
+          const options = availableLetters.map(letter => `<option value="${letter}">Grupo ${letter}</option>`).join('');
+          groupSelect.innerHTML = '<option value="">Seleccione un grupo</option>' + options;
+        }
+
+        if (teamGroupSelect) {
+          buildGroupSelectOptions(teamGroupSelect, orderedGroups, true);
+        }
+      }
+
+      async function fetchGroups() {
+        const response = await fetch('<%= groups_path(format: :json) %>', {
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) return null;
+        return await response.json();
+      }
+
+      async function refreshGroups() {
+        const groups = await fetchGroups();
+        if (groups) {
+          updateGroupsUI(groups);
+        }
+      }
+
+      function applyGroupFilter(groupLetter) {
+        const rows = document.querySelectorAll('tbody tr[data-team-group-letter]');
+        rows.forEach(row => {
+          if (!groupLetter || groupLetter === 'all' || row.dataset.teamGroupLetter === groupLetter) {
+            row.classList.remove('hidden');
+          } else {
+            row.classList.add('hidden');
+          }
+        });
+      }
+
+      function highlightFilterButton(clicked) {
+        if (!groupFilterButtons) return;
+        groupFilterButtons.querySelectorAll('button[data-group-letter]').forEach(button => {
+          button.classList.remove('bg-primary-container', 'text-white', 'font-semibold');
+          button.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+        });
+        if (clicked) {
+          clicked.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+          clicked.classList.add('bg-primary-container', 'text-white', 'font-semibold');
+        }
+      }
+
+      if (groupFilterButtons) {
+        groupFilterButtons.addEventListener('click', event => {
+          const button = event.target.closest('button[data-group-letter]');
+          if (!button) return;
+          const groupLetter = button.dataset.groupLetter;
+          applyGroupFilter(groupLetter);
+          highlightFilterButton(button);
+        });
+      }
+
+      // Highlight active nav link
+      document.querySelectorAll('.nav-link').forEach(link => {
+        if (link.href === window.location.href) {
+          link.classList.add('bg-primary/20', 'sidebar-active');
+          link.classList.remove('hover:bg-primary/10');
+        }
+      });
+
+      // Group form submission
+      const groupForm = document.getElementById('group-add-form');
+      if (groupForm) {
+        groupForm.addEventListener('submit', async event => {
+          event.preventDefault();
+
+          if (!groupSelect || !groupSelect.value) {
+            showNotification('Seleccione un grupo', 'Debes elegir una opción antes de agregar.', 'alert');
+            return;
+          }
+
+          const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+          const formData = new FormData();
+          formData.append('group[letter]', groupSelect.value);
+
+          const response = await fetch('<%= groups_path %>', {
+            method: 'POST',
+            headers: {
+              'X-CSRF-Token': csrfToken,
+              'Accept': 'application/json'
+            },
+            body: formData,
+            credentials: 'same-origin'
+          });
+
+          if (response.ok) {
+            const data = await response.json().catch(() => null);
+            closeGroupModal();
+            showNotification('Grupo agregado', data?.message || `Grupo ${groupSelect.value} agregado correctamente.`);
+            if (groupSelect) groupSelect.value = '';
+            await refreshGroups();
+          } else {
+            const error = await response.json().catch(() => null);
+            showNotification('Error al agregar grupo', error?.message || 'No se pudo agregar el grupo.', 'alert');
+          }
+        });
+      }
+    </script>
   </body>
 </html>

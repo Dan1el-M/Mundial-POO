@@ -3,11 +3,25 @@ class GroupsController < ApplicationController
 
   def index
     @groups = Group.ordered.includes(:teams)
+
+    respond_to do |format|
+      format.html
+      format.json do
+        render json: @groups.map { |group|
+          {
+            id: group.id,
+            letter: group.letter,
+            teams: group.teams.order(:name).map { |team| { id: team.id, name: team.name } }
+          }
+        }
+      end
+    end
   end
 
   def show
     @standings = GroupStandingService.new(@group).call
     @matches = @group.matches.includes(:home_team, :away_team)
+    @groups = Group.ordered
   end
 
   def new
@@ -18,9 +32,15 @@ class GroupsController < ApplicationController
     @group = Group.new(group_params)
 
     if @group.save
-      redirect_to groups_path, notice: "Group created successfully."
+      respond_to do |format|
+        format.html { redirect_to groups_path, notice: "Group created successfully." }
+        format.json { render json: { message: "Grupo agregado correctamente.", letter: @group.letter }, status: :created }
+      end
     else
-      render :new, status: :unprocessable_entity
+      respond_to do |format|
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: { message: @group.errors.full_messages.to_sentence }, status: :unprocessable_entity }
+      end
     end
   end
 
