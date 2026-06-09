@@ -10,14 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_09_010559) do
-  create_table "groups", force: :cascade do |t|
-    t.string "letter", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["letter"], name: "index_groups_on_letter", unique: true
-  end
-
+ActiveRecord::Schema[7.1].define(version: 2026_06_07_000000) do
   create_table "grupos", force: :cascade do |t|
     t.string "letra", null: false
     t.datetime "created_at", null: false
@@ -47,6 +40,44 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_09_010559) do
     t.index ["winner_team_id"], name: "index_matches_on_winner_team_id"
   end
 
+  create_table "partidos", force: :cascade do |t|
+    t.integer "numero_partido", null: false
+    t.string "estado", default: "programado", null: false
+    t.string "tipo_partido", null: false
+    t.integer "torneo_id"
+    t.integer "grupo_id"
+    t.integer "seleccion_local_id", null: false
+    t.integer "seleccion_visitante_id", null: false
+    t.integer "ganador_id"
+    t.integer "goles_local"
+    t.integer "goles_visitante"
+    t.integer "goles_penales_local"
+    t.integer "goles_penales_visitante"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ganador_id"], name: "index_partidos_on_ganador_id"
+    t.index ["grupo_id"], name: "index_partidos_on_grupo_id"
+    t.index ["numero_partido"], name: "index_partidos_on_numero_partido"
+    t.index ["seleccion_local_id"], name: "index_partidos_on_seleccion_local_id"
+    t.index ["seleccion_visitante_id"], name: "index_partidos_on_seleccion_visitante_id"
+    t.index ["tipo_partido", "estado"], name: "index_partidos_on_tipo_partido_and_estado"
+  end
+
+  create_table "selecciones", force: :cascade do |t|
+    t.string "nombre", null: false
+    t.integer "grupo_id", null: false
+    t.integer "puntos", default: 0, null: false
+    t.integer "goles_favor", default: 0, null: false
+    t.integer "goles_contra", default: 0, null: false
+    t.integer "diferencia_goles", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "acronimo", limit: 3, null: false
+    t.index ["acronimo"], name: "index_selecciones_on_acronimo", unique: true
+    t.index ["grupo_id"], name: "index_selecciones_on_grupo_id"
+    t.index ["nombre"], name: "index_selecciones_on_nombre", unique: true
+  end
+
   create_table "teams", force: :cascade do |t|
     t.string "name", null: false
     t.integer "group_id", null: false
@@ -64,5 +95,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_09_010559) do
   add_foreign_key "matches", "teams", column: "away_team_id"
   add_foreign_key "matches", "teams", column: "home_team_id"
   add_foreign_key "matches", "teams", column: "winner_team_id"
+  add_foreign_key "partidos", "grupos"
+  add_foreign_key "partidos", "selecciones", column: "ganador_id"
+  add_foreign_key "partidos", "selecciones", column: "seleccion_local_id"
+  add_foreign_key "partidos", "selecciones", column: "seleccion_visitante_id"
+  add_foreign_key "selecciones", "grupos"
   add_foreign_key "teams", "groups"
 end

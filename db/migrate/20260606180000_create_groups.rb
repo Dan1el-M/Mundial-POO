@@ -1,11 +1,11 @@
 class CreateGroups < ActiveRecord::Migration[7.1]
   def change
-    create_table :groups do |t|
-      t.string :letter, null: false
+    create_table :grupos do |t|
+      t.string :letra, null: false
 
       t.timestamps
     end
 
-    add_index :groups, :letter, unique: true
+    add_index :grupos, :letra, unique: true
   end
 end
