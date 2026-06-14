@@ -1,0 +1,185 @@
+<% selected_letter = @selected_group&.letter || "A" %>
+
+<style>
+  .glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid #DEE2E6;
+  }
+</style>
+
+<header class="mb-section-margin flex flex-col md:flex-row md:items-end justify-between gap-gutter">
+  <div>
+    <h1 class="font-headline-lg text-headline-lg text-primary mb-2">Gestion de Calendario y Resultados</h1>
+    <p class="text-on-surface-variant font-body-lg">Control administrativo de la Fase de Grupos</p>
+  </div>
+  <%= link_to group_matches_path, class: 'bg-surface-container-high text-primary px-5 py-3 rounded-lg font-bold hover:bg-outline-variant transition-colors flex items-center gap-2' do %>
+    <span class="material-symbols-outlined">arrow_back</span>
+    Volver
+  <% end %>
+</header>
+
+<% if notice.present? %>
+  <div class="mb-gutter bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-xl font-semibold">
+    <%= notice %>
+  </div>
+<% end %>
+
+<% if alert.present? %>
+  <div class="mb-gutter bg-error-container border border-error/20 text-on-error-container px-5 py-4 rounded-xl font-semibold">
+    <%= alert %>
+  </div>
+<% end %>
+
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-gutter">
+  <div class="col-span-1 glass-card p-4 rounded-xl shadow-sm border border-outline-variant">
+    <label class="block font-label-sm text-on-surface-variant mb-2">Filtrar por Grupo</label>
+    <%= form_with url: calendar_group_matches_path, method: :get, local: true, class: 'flex gap-2' do %>
+      <%= select_tag :group_id,
+                     options_from_collection_for_select(@groups, :id, ->(group) { "Grupo #{group.letter}" }, @selected_group&.id),
+                     class: 'w-full bg-surface-container-low border-outline border rounded-lg px-3 py-2 font-body-md focus:ring-2 focus:ring-secondary focus:outline-none' %>
+      <button class="bg-primary text-on-primary px-4 rounded-lg font-bold hover:bg-primary-container transition-all" type="submit">
+        Aplicar
+      </button>
+    <% end %>
+  </div>
+
+  <div class="col-span-2 glass-card p-4 rounded-xl shadow-sm border border-outline-variant">
+    <span class="block font-label-sm text-on-surface-variant mb-2">Grupo seleccionado</span>
+    <div class="flex items-center gap-3">
+      <span class="w-12 h-12 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center font-black text-xl"><%= selected_letter %></span>
+      <div>
+        <p class="font-bold text-primary">Grupo <%= selected_letter %></p>
+        <p class="text-sm text-on-surface-variant"><%= pluralize(@matches.size, "partido") %> programados</p>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<div class="flex flex-col xl:flex-row gap-card-gap">
+  <div class="flex-1 space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-2">
+      <h3 class="font-headline-md text-headline-md text-primary">Partidos del Grupo <%= selected_letter %></h3>
+      <span class="text-on-surface-variant font-label-sm uppercase tracking-wider">Jornadas de fase de grupos</span>
+    </div>
+
+    <% if @matches.any? %>
+      <% @matches.each_with_index do |match, index| %>
+        <% completed = match.completed? %>
+        <% border_class = completed ? 'border-l-primary bg-surface-container-low' : 'border-l-outline-variant' %>
+        <% status_label = completed ? 'Finalizado' : 'Programado' %>
+        <% home_code = match.home_team.acronym.presence || match.home_team.name[0, 3] %>
+        <% away_code = match.away_team.acronym.presence || match.away_team.name[0, 3] %>
+
+        <article class="glass-card rounded-xl p-6 border-l-4 <%= border_class %> transition-all hover:shadow-md">
+          <div class="flex justify-between items-start mb-6">
+            <div class="flex items-center gap-2">
+              <span class="<%= completed ? 'text-primary' : 'text-on-surface-variant' %> font-label-sm font-bold uppercase"><%= status_label %></span>
+            </div>
+            <div class="text-right">
+              <span class="block font-bold text-primary">Grupo <%= match.group.letter %></span>
+            </div>
+          </div>
+
+          <%= form_with model: match, url: group_match_path(match), method: :patch, local: true do |form| %>
+            <%= hidden_field_tag :redirect_to_calendar, "1" %>
+
+            <div class="grid grid-cols-3 items-center gap-4">
+              <div class="text-center">
+                <div class="flex flex-col items-center gap-2 mb-2">
+                  <div class="w-16 h-12 bg-surface-container-highest rounded border border-outline-variant flex items-center justify-center font-black text-xl"><%= home_code.upcase %></div>
+                  <span class="font-headline-md text-primary"><%= match.home_team.name %></span>
+                </div>
+                <%= form.number_field :home_score,
+                                      min: 0,
+                                      required: true,
+                                      value: match.home_score,
+                                      placeholder: "-",
+                                      class: "w-20 text-center text-3xl font-black bg-surface-container border-2 border-primary rounded-xl p-2 focus:ring-2 focus:ring-secondary focus:outline-none" %>
+              </div>
+
+              <div class="text-center">
+                <span class="font-display-lg text-outline-variant opacity-50">VS</span>
+              </div>
+
+              <div class="text-center">
+                <div class="flex flex-col items-center gap-2 mb-2">
+                  <div class="w-16 h-12 bg-surface-container-highest rounded border border-outline-variant flex items-center justify-center font-black text-xl"><%= away_code.upcase %></div>
+                  <span class="font-headline-md text-primary"><%= match.away_team.name %></span>
+                </div>
+                <%= form.number_field :away_score,
+                                      min: 0,
+                                      required: true,
+                                      value: match.away_score,
+                                      placeholder: "-",
+                                      class: "w-20 text-center text-3xl font-black bg-surface-container border-2 border-primary rounded-xl p-2 focus:ring-2 focus:ring-secondary focus:outline-none" %>
+              </div>
+            </div>
+
+            <div class="mt-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-t border-outline-variant pt-4">
+              <span class="<%= completed ? 'text-primary' : 'text-on-surface-variant' %> font-label-sm font-bold uppercase flex items-center gap-2">
+                <span class="material-symbols-outlined"><%= completed ? 'verified' : 'schedule' %></span>
+                <%= completed ? 'Resultado registrado' : 'Pendiente de resultado' %>
+              </span>
+              <button type="submit" class="bg-primary text-on-primary px-6 py-2 rounded-full font-bold hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">save</span>
+                Guardar marcador
+              </button>
+            </div>
+          <% end %>
+        </article>
+      <% end %>
+    <% else %>
+      <div class="glass-card rounded-xl p-8 border border-outline-variant text-center">
+        <span class="material-symbols-outlined text-5xl text-outline mb-3">event_busy</span>
+        <h3 class="font-headline-md text-primary mb-2">Sin partidos programados</h3>
+        <p class="text-on-surface-variant">Regresa y genera el calendario cuando el grupo tenga sus 4 selecciones.</p>
+      </div>
+    <% end %>
+  </div>
+
+  <aside class="w-full xl:w-96 space-y-gutter">
+    <div class="glass-card rounded-xl p-6 shadow-sm border border-outline-variant">
+      <div class="flex items-center justify-between mb-4">
+        <h4 class="font-headline-md text-primary">Tablas de Grupos</h4>
+        <span class="material-symbols-outlined text-secondary">leaderboard</span>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mb-6">
+        <% @groups.each do |group| %>
+          <% active = group.id == @selected_group&.id %>
+          <%= link_to group.letter,
+                      calendar_group_matches_path(group_id: group.id),
+                      class: "px-3 py-1 rounded-full text-xs font-bold transition-colors #{active ? 'bg-primary text-on-primary' : 'bg-surface-container-highest text-primary hover:bg-primary-fixed'}" %>
+        <% end %>
+      </div>
+
+      <% if @selected_group.present? %>
+        <div class="overflow-hidden">
+          <table class="w-full text-left font-body-md">
+            <thead class="bg-primary text-on-primary">
+              <tr>
+                <th class="py-2 px-3 first:rounded-tl-lg">Equipo</th>
+                <th class="py-2 px-1 text-center">PJ</th>
+                <th class="py-2 px-1 text-center">DG</th>
+                <th class="py-2 px-3 last:rounded-tr-lg text-center">PTS</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant">
+              <% @selected_group.standings.each do |team| %>
+                <% played_matches = @selected_group.matches.completed.where("home_team_id = :team_id OR away_team_id = :team_id", team_id: team.id).count %>
+                <tr class="hover:bg-surface-container transition-colors">
+                  <td class="py-3 px-3 font-bold"><%= team.name %></td>
+                  <td class="py-3 px-1 text-center"><%= played_matches %></td>
+                  <td class="py-3 px-1 text-center"><%= team.goal_difference.positive? ? "+#{team.goal_difference}" : team.goal_difference %></td>
+                  <td class="py-3 px-3 text-center font-black text-primary"><%= team.points %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  </aside>
+</div>

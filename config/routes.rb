@@ -3,6 +3,15 @@ Rails.application.routes.draw do
 
   root "posiciones#index"
 
+  resources :teams, except: :show
+  resources :groups
+  resources :group_matches, except: :show do
+    collection do
+      post :generate_calendar
+      get :calendar
+    end
+  end
+  resources :knockout_matches, only: %i[index edit update]
   # Recursos principales en espanol
   resources :grupos do
     member do
