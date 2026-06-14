@@ -7,7 +7,7 @@
 #   GET  /campeones       → index (podio completo)
 #   GET  /campeones/show  → show  (detalle del campeón)
 
-class CampehonesController < ApplicationController
+class CampeonesController < ApplicationController
   before_action :verificar_torneo_completo, only: [:index, :show]
 
   # ──────────────────────────────────────────
