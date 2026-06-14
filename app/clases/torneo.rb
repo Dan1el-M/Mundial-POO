@@ -73,24 +73,45 @@ class Torneo < ApplicationRecord
   # ──────────────────────────────────────────
 
   # Tabla de posiciones de un grupo, ordenada por criterios FIFA.
-  # Recibe un objeto Grupo.
+  # Delega al modelo Grupo para obtener la tabla.
+  #
+  # @param grupo [Grupo] objeto del grupo
+  # @return [Array<Seleccion>] selecciones ordenadas
   def tabla_grupo(grupo)
-    Seleccion.tabla_de_grupo(grupo.id)
-  end
-
-  # Los dos primeros de cada uno de los 12 grupos → 24 selecciones.
-  def clasificados_por_primeros_y_segundos
-    grupos.flat_map(&:clasificados_directos)
-  end
-
-  # Los ocho mejores terceros lugares entre todos los grupos.
-  def mejores_terceros
-    Seleccion.mejores_terceros(8)
+    grupo.tabla_posiciones
   end
 
   # Las 32 selecciones clasificadas a la fase de eliminación directa.
+  # Delega al servicio DeterminarClasificados para consistencia.
+  #
+  # @return [Array<Seleccion>] 32 equipos clasificados
   def selecciones_clasificadas
-    clasificados_por_primeros_y_segundos + mejores_terceros
+    DeterminarClasificados.obtener[:total_clasificados]
+  end
+
+  # Los 24 clasificados (primeros + segundos de cada grupo).
+  # Conveniencia para acceso directo.
+  #
+  # @return [Array<Seleccion>] 24 equipos
+  def clasificados_por_primeros_y_segundos
+    clasificados = DeterminarClasificados.obtener
+    clasificados[:primeros] + clasificados[:segundos]
+  end
+
+  # Los 8 mejores terceros lugares entre todos los grupos.
+  # Conveniencia para acceso directo.
+  #
+  # @return [Array<Seleccion>] hasta 8 equipos
+  def mejores_terceros
+    DeterminarClasificados.obtener[:terceros_clasificados]
+  end
+
+  # Verifica si la fase de grupos está lista para pasar a eliminación directa.
+  # Usa el servicio para verificación consistente.
+  #
+  # @return [Boolean]
+  def fase_grupos_lista?
+    DeterminarClasificados.new.fase_grupos_completa?
   end
 
   # ──────────────────────────────────────────
@@ -130,12 +151,32 @@ class Torneo < ApplicationRecord
   # Consultas de partidos
   # ──────────────────────────────────────────
 
+  # Partidos de fase de grupos (usualmente 72 para 48 equipos)
+  #
+  # @return [ActiveRecord::Relation]
   def partidos_de_fase_grupos
-    partidos.where(tipo_partido: "fase_grupos")
+    partidos.fase_grupos
   end
 
+  # Partidos de eliminación directa (dieciseisavos a final)
+  #
+  # @return [ActiveRecord::Relation]
   def partidos_de_eliminacion
-    partidos.where(tipo_partido: "eliminacion_directa")
+    partidos.eliminacion_directa
+  end
+
+  # Partidos pendientes en la etapa actual
+  #
+  # @return [ActiveRecord::Relation]
+  def partidos_pendientes
+    partidos_en_etapa_actual.where(estado: %w[programado en_juego])
+  end
+
+  # Partidos finalizados en la etapa actual
+  #
+  # @return [ActiveRecord::Relation]
+  def partidos_finalizados_en_etapa
+    partidos_en_etapa_actual.finalizados
   end
 
   # ──────────────────────────────────────────
@@ -160,14 +201,17 @@ class Torneo < ApplicationRecord
   # Auxiliares privados
   # ──────────────────────────────────────────
 
-  # True si ningún partido de la etapa actual sigue pendiente.
+  # Verifica que todos los partidos de la etapa actual estén finalizados.
+  # En fase de grupos verifica TODOS los partidos de grupos.
+  # En eliminación verifica solo los de esa ronda.
   def todos_los_partidos_finalizados?
-    partidos_en_etapa_actual.all?(&:finalizado?)
+    pendientes = partidos_pendientes.count
+    pendientes.zero?
   end
 
   # Partidos que corresponden a la etapa actual.
-  # En fase de grupos filtra por tipo_partido.
-  # En eliminación directa filtra por numero_partido según el rango de la ronda.
+  # En fase de grupos: todos los partidos de fase_grupos.
+  # En eliminación: solo los del rango de números de esa ronda.
   def partidos_en_etapa_actual
     if etapa_actual == "fase_grupos"
       partidos_de_fase_grupos
@@ -180,16 +224,15 @@ class Torneo < ApplicationRecord
 
   # Rango de números de partido por ronda de eliminación directa.
   # El Mundial 2026 tiene 104 partidos en total:
-  #   Partidos  1-48 → fase de grupos (48 equipos × 3 partidos / 2 = 72? No:
-  #     12 grupos × 6 partidos c/u = 72 partidos de grupos)
-  #   Partidos 73-88 → dieciseisavos (16 partidos)
-  #   Partidos 89-96 → octavos       ( 8 partidos)
-  #   Partidos 97-100→ cuartos       ( 4 partidos)
-  #   Partidos 101-102→ semifinales  ( 2 partidos)
-  #   Partido  103   → tercer lugar  ( 1 partido )
-  #   Partido  104   → final         ( 1 partido )
+  #   Partidos  1-72  → fase de grupos    (12 grupos × 6 partidos)
+  #   Partidos 73-88  → dieciseisavos    (16 partidos)
+  #   Partidos 89-96  → octavos           ( 8 partidos)
+  #   Partidos 97-100 → cuartos           ( 4 partidos)
+  #   Partidos 101-102→ semifinales       ( 2 partidos)
+  #   Partido  103    → tercer lugar      ( 1 partido )
+  #   Partido  104    → final             ( 1 partido )
   #
-  # NOTA: ajustar estos rangos con el compañero que cree los partidos.
+  # NOTA: Coordinar con el compañero que genera los partidos.
   def rango_numeros_para(etapa)
     {
       "dieciseisavos" => (73..88),
@@ -210,6 +253,7 @@ class Torneo < ApplicationRecord
   end
 
   # Selección que perdió el partido (la que no es el ganador).
+  # Usado para determinar subcampeón.
   def perdedor_de(partido)
     return nil if partido.ganador_id.blank?
 
@@ -220,10 +264,12 @@ class Torneo < ApplicationRecord
     end
   end
 
+  # Número de partido para la final (104).
   def numero_partido_final
     104
   end
 
+  # Número de partido para tercer lugar (103).
   def numero_partido_tercer_lugar
     103
   end
