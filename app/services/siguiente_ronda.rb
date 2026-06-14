@@ -150,36 +150,39 @@ class SiguienteRonda
   def generar_final_y_tercer_lugar(ganadores, partidos_semifinal)
     perdedores = obtener_perdedores(partidos_semifinal)
 
-    if partidos_de_etapa("final").exists? || partidos_de_etapa("tercer_lugar").exists?
-      return { ok: false, error: "La final y/o el tercer lugar ya fueron generados." }
-    end
-
     partidos_creados = []
 
     if perdedores.length == 2
-      tercer_lugar = Partido.create!(
-        numero_partido:         103,
+      tercer_lugar = Partido.find_or_initialize_by(numero_partido: 103)
+      tercer_lugar.assign_attributes(
         tipo_partido:           "eliminacion_directa",
         estado:                 "programado",
         torneo_id:              @torneo.id,
         seleccion_local_id:     perdedores[0].id,
         seleccion_visitante_id: perdedores[1].id
       )
+      tercer_lugar.save!
       partidos_creados << tercer_lugar
+    else
+      return { ok: false, error: "No se pudieron determinar los perdedores de semifinales." }
     end
 
     if ganadores.length == 2
-      final = Partido.create!(
-        numero_partido:         104,
+      final = Partido.find_or_initialize_by(numero_partido: 104)
+      final.assign_attributes(
         tipo_partido:           "eliminacion_directa",
         estado:                 "programado",
         torneo_id:              @torneo.id,
         seleccion_local_id:     ganadores[0].id,
         seleccion_visitante_id: ganadores[1].id
       )
+      final.save!
       partidos_creados << final
+    else
+      return { ok: false, error: "No se pudieron determinar los ganadores de semifinales." }
     end
 
     { ok: true, etapa: "final_y_tercer_lugar", partidos_creados: partidos_creados }
   end
+ 
 end
