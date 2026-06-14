@@ -53,6 +53,12 @@ class ClasificadosController < ApplicationController
     @partidos = @seleccion.partidos_finalizados
   end
 
+  # GET /clasificados/:id/detalles
+  # Alias en espanol para mostrar el detalle del clasificado.
+  def detalles
+    show
+  end
+
   # ──────────────────────────────────────────
   # GET /clasificados/por-grupo
   # Muestra los clasificados organizados por grupo

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_09_010559) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_14_000100) do
   create_table "groups", force: :cascade do |t|
     t.string "letter", null: false
     t.datetime "created_at", null: false
@@ -22,7 +22,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_09_010559) do
     t.string "letra", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "torneo_id"
     t.index ["letra"], name: "index_grupos_on_letra", unique: true
+    t.index ["torneo_id"], name: "index_grupos_on_torneo_id"
   end
 
   create_table "matches", force: :cascade do |t|
@@ -68,6 +70,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_09_010559) do
     t.index ["seleccion_local_id"], name: "index_partidos_on_seleccion_local_id"
     t.index ["seleccion_visitante_id"], name: "index_partidos_on_seleccion_visitante_id"
     t.index ["tipo_partido", "estado"], name: "index_partidos_on_tipo_partido_and_estado"
+    t.index ["torneo_id"], name: "index_partidos_on_torneo_id"
   end
 
   create_table "selecciones", force: :cascade do |t|
@@ -98,6 +101,22 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_09_010559) do
     t.index ["name"], name: "index_teams_on_name", unique: true
   end
 
+  create_table "torneos", force: :cascade do |t|
+    t.string "nombre", null: false
+    t.string "etapa_actual", default: "fase_grupos", null: false
+    t.integer "campeon_id"
+    t.integer "subcampeon_id"
+    t.integer "tercero_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["campeon_id"], name: "index_torneos_on_campeon_id"
+    t.index ["etapa_actual"], name: "index_torneos_on_etapa_actual"
+    t.index ["nombre"], name: "index_torneos_on_nombre", unique: true
+    t.index ["subcampeon_id"], name: "index_torneos_on_subcampeon_id"
+    t.index ["tercero_id"], name: "index_torneos_on_tercero_id"
+  end
+
+  add_foreign_key "grupos", "torneos"
   add_foreign_key "matches", "groups"
   add_foreign_key "matches", "teams", column: "away_team_id"
   add_foreign_key "matches", "teams", column: "home_team_id"
@@ -106,6 +125,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_09_010559) do
   add_foreign_key "partidos", "selecciones", column: "ganador_id"
   add_foreign_key "partidos", "selecciones", column: "seleccion_local_id"
   add_foreign_key "partidos", "selecciones", column: "seleccion_visitante_id"
+  add_foreign_key "partidos", "torneos"
   add_foreign_key "selecciones", "grupos"
   add_foreign_key "teams", "groups"
+  add_foreign_key "torneos", "selecciones", column: "campeon_id"
+  add_foreign_key "torneos", "selecciones", column: "subcampeon_id"
+  add_foreign_key "torneos", "selecciones", column: "tercero_id"
 end

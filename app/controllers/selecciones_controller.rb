@@ -15,10 +15,17 @@ class SeleccionesController < ApplicationController
     @partidos = @seleccion.todos_los_partidos.order(created_at: :desc)
   end
 
+  # GET /selecciones/:id/partidos
+  # Lista los partidos de una seleccion.
+  def partidos
+    set_seleccion
+    @partidos = @seleccion.todos_los_partidos.order(created_at: :desc)
+  end
+
   # GET /selecciones/new
   def new
     @seleccion = Seleccion.new
-    @grupos    = Grupo.all.order(:nombre)
+    @grupos    = Grupo.all.order(:letra)
   end
 
   # POST /selecciones
@@ -29,14 +36,14 @@ class SeleccionesController < ApplicationController
       redirect_to @seleccion,
                   notice: "Selección '#{@seleccion.nombre}' (#{@seleccion.acronimo}) registrada correctamente."
     else
-      @grupos = Grupo.all.order(:nombre)
+      @grupos = Grupo.all.order(:letra)
       render :new, status: :unprocessable_entity
     end
   end
 
   # GET /selecciones/:id/edit
   def edit
-    @grupos = Grupo.all.order(:nombre)
+    @grupos = Grupo.all.order(:letra)
   end
 
   # PATCH/PUT /selecciones/:id
@@ -51,7 +58,7 @@ class SeleccionesController < ApplicationController
       redirect_to @seleccion,
                   notice: "Selección '#{@seleccion.nombre}' (#{@seleccion.acronimo}) actualizada correctamente."
     else
-      @grupos = Grupo.all.order(:nombre)
+      @grupos = Grupo.all.order(:letra)
       render :edit, status: :unprocessable_entity
     end
   end
