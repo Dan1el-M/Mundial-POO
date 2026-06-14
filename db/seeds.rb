@@ -1,9 +1,28 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+groups_with_teams = {
+  "A" => ["Mexico", "Japan", "Nigeria", "Switzerland"],
+  "B" => ["United States", "South Korea", "Ghana", "Croatia"],
+  "C" => ["Canada", "Senegal", "Uruguay", "Denmark"],
+  "D" => ["Brazil", "Poland", "Australia", "Morocco"],
+  "E" => ["Argentina", "Serbia", "Ecuador", "Norway"],
+  "F" => ["France", "Chile", "Egypt", "Sweden"],
+  "G" => ["Spain", "Cameroon", "Paraguay", "Austria"],
+  "H" => ["England", "Tunisia", "Colombia", "Romania"],
+  "I" => ["Germany", "Peru", "Ivory Coast", "Scotland"],
+  "J" => ["Italy", "Algeria", "Turkey", "Venezuela"],
+  "K" => ["Portugal", "Costa Rica", "Ukraine", "Saudi Arabia"],
+  "L" => ["Netherlands", "Belgium", "Iran", "New Zealand"]
+}.freeze
+
+Match.delete_all
+Team.delete_all
+Group.delete_all
+
+groups_with_teams.each do |letter, team_names|
+  group = Group.create!(letter: letter)
+
+  team_names.each do |team_name|
+    Team.create!(name: team_name, group: group)
+  end
+end
+
+puts "Seeded #{Group.count} groups and #{Team.count} teams."

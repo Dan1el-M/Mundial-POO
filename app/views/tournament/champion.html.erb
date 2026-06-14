@@ -1,0 +1,42 @@
+<section class="page-header">
+  <div>
+    <h1>Champions</h1>
+    <p>Final podium for the FIFA World Cup 2026 simulation.</p>
+  </div>
+</section>
+
+<section class="grid">
+  <article class="card highlight">
+    <h2>Champion</h2>
+    <p><%= @champion&.name || "Pending final result" %></p>
+  </article>
+
+  <article class="card">
+    <h2>Runner-up</h2>
+    <p><%= @runner_up&.name || "Pending final result" %></p>
+  </article>
+
+  <article class="card">
+    <h2>Third place</h2>
+    <p><%= @third_place&.name || "Pending third-place match" %></p>
+  </article>
+</section>
+
+<section class="card">
+  <h2>Final match</h2>
+  <% if @final_match.present? %>
+    <p>
+      <strong><%= @final_match.home_team.name %></strong>
+      vs
+      <strong><%= @final_match.away_team.name %></strong>
+    </p>
+    <p>
+      <%= @final_match.completed? ? "#{@final_match.home_score} - #{@final_match.away_score}" : "Pending" %>
+      <% if @final_match.draw? %>
+        <span class="muted"><%= "(Pen #{@final_match.home_penalty_score} - #{@final_match.away_penalty_score})" %></span>
+      <% end %>
+    </p>
+  <% else %>
+    <p>The final has not been generated yet.</p>
+  <% end %>
+</section>

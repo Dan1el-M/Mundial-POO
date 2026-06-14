@@ -13,3 +13,171 @@
  *= require_tree .
  *= require_self
  */
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6fb;
+  color: #18202a;
+}
+
+.container {
+  width: min(1100px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.topbar {
+  background: #112d4e;
+  padding: 1rem 0;
+  margin-bottom: 1.5rem;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.nav-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.page-header,
+.section-title,
+.actions-inline,
+.actions,
+.field-grid,
+.grid {
+  display: flex;
+  gap: 1rem;
+}
+
+.page-header,
+.section-title {
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.grid {
+  flex-wrap: wrap;
+}
+
+.grid > * {
+  flex: 1 1 280px;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 30px rgba(17, 45, 78, 0.08);
+  margin-bottom: 1.25rem;
+}
+
+.highlight {
+  background: linear-gradient(135deg, #f7d774, #fff7d6);
+}
+
+.button {
+  display: inline-block;
+  border: none;
+  border-radius: 8px;
+  background: #1f6feb;
+  color: #ffffff;
+  padding: 0.65rem 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.button-secondary {
+  background: #596275;
+}
+
+.button-danger {
+  background: #d64545;
+}
+
+.button-small {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.field-grid {
+  flex-wrap: wrap;
+}
+
+.field-grid > .field {
+  flex: 1 1 220px;
+}
+
+input,
+select {
+  padding: 0.7rem;
+  border-radius: 8px;
+  border: 1px solid #c8d0db;
+  font-size: 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e6ebf2;
+  text-align: left;
+  vertical-align: top;
+}
+
+.plain-list,
+.qualified-list {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.muted {
+  color: #596275;
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.alert-success {
+  background: #d7f5e8;
+  color: #165940;
+}
+
+.alert-danger {
+  background: #ffe3e3;
+  color: #8a1f2d;
+}
+
+@media (max-width: 700px) {
+  .page-header,
+  .section-title,
+  .actions-inline,
+  .actions,
+  .field-grid {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
