@@ -134,9 +134,74 @@ class Seleccion < ApplicationRecord
     Seleccion.tabla_de_grupo(grupo_id).pluck(:id).index(id).to_i + 1
   end
 
+  # Verifica si esta selección clasificó a la fase de eliminación directa
+  # (primer o segundo lugar de su grupo)
+  def clasificado_directo?
+    posicion_en_grupo <= 2
+  end
+
+  # Verifica si es el tercer lugar (podría clasificar como mejor tercero)
+  def es_tercero?
+    posicion_en_grupo == 3
+  end
+
+  # Retorna todos los partidos de esta selección en orden cronológico
+  def partidos_ordenados
+    todos_los_partidos.order(created_at: :asc)
+  end
+
+  # Retorna los partidos finalizados (jugados)
+  def partidos_finalizados
+    todos_los_partidos.where(estado: "finalizado").order(created_at: :asc)
+  end
+
+  # Retorna los partidos pendientes (no jugados)
+  def partidos_pendientes
+    todos_los_partidos.where(estado: %w[programado en_juego])
+  end
+
+  # Cuenta el número de victorias de esta selección
+  def victorias
+    partidos_finalizados.count do |partido|
+      es_local = partido.seleccion_local_id == id
+      es_local ? (partido.goles_local > partido.goles_visitante) :
+               (partido.goles_visitante > partido.goles_local)
+    end
+  end
+
+  # Cuenta el número de empates de esta selección
+  def empates
+    partidos_finalizados.count do |partido|
+      partido.goles_local == partido.goles_visitante
+    end
+  end
+
+  # Cuenta el número de derrotas de esta selección
+  def derrotas
+    partidos_finalizados.count - victorias - empates
+  end
+
   # Representación legible para logs y vistas
   def to_s
-    "#{acronimo} - #{nombre} (Grupo #{grupo&.nombre})"
+    "#{acronimo} - #{nombre} (Grupo #{grupo&.letra})"
+  end
+
+  # Hash con resumen de estadísticas
+  def resumen_estadisticas
+    {
+      nombre: nombre,
+      acronimo: acronimo,
+      grupo: grupo&.letra,
+      posicion: posicion_en_grupo,
+      puntos: puntos,
+      victorias: victorias,
+      empates: empates,
+      derrotas: derrotas,
+      goles_favor: goles_favor,
+      goles_contra: goles_contra,
+      diferencia_goles: diferencia_goles,
+      partidos_jugados: partidos_finalizados.count
+    }
   end
 
   # ──────────────────────────────────────────
