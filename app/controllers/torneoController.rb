@@ -59,17 +59,15 @@ class TorneoController < ApplicationController
   # Intenta avanzar a la siguiente etapa del torneo.
   # Solo tiene efecto si todos los partidos de la etapa actual están finalizados.
   def avanzar_etapa
-    if @torneo.avanzar_etapa_si_es_posible
-      # Si se llegó a la etapa de tercer lugar o final y ambos partidos
-      # ya están listos, calcula el podio automáticamente.
-      @torneo.determinar_podio! if @torneo.finalizado? == false &&
-                                   podio_listo?
+    servicio = SiguienteRonda.new(@torneo)
+    resultado = servicio.avanzar
 
+    if resultado[:ok]
       redirect_to @torneo,
-                  notice: "Se avanzó a la etapa: #{@torneo.etapa_actual}."
+                  notice: " Partidos generados para: #{resultado[:etapa].humanize}."
     else
       redirect_to @torneo,
-                  alert: "No se puede avanzar: aún hay partidos pendientes en la etapa actual."
+                  alert: " #{resultado[:error]}"
     end
   end
 
