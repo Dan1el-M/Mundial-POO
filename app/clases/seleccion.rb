@@ -1,28 +1,10 @@
-# == Schema Information
-#
-# Table name: selecciones
-#
-#  id               :integer  not null, primary key
-#  nombre           :string   not null
-#  acronimo         :string(3) not null
-#  grupo_id         :integer  not null, foreign key
-#  puntos           :integer  default(0), not null
-#  goles_favor      :integer  default(0), not null
-#  goles_contra     :integer  default(0), not null
-#  diferencia_goles :integer  default(0), not null
-#  created_at       :datetime not null
-#  updated_at       :datetime not null
-
 class Seleccion < ApplicationRecord
 
   # ──────────────────────────────────────────
   # Asociaciones
   # ──────────────────────────────────────────
-
-  # Pertenece a un grupo (tabla grupos, manejada por el compañero de Torneos)
   belongs_to :grupo
 
-  # Participa como local o visitante en partidos
   has_many :partidos_como_local,
            class_name:  "Partido",
            foreign_key: :seleccion_local_id,
@@ -63,7 +45,6 @@ class Seleccion < ApplicationRecord
   # Genera el acrónimo automáticamente si no fue asignado manualmente
   before_validation :generar_acronimo, on: %i[create update]
 
-  # Recalcula la diferencia de goles antes de cada guardado
   before_save :calcular_diferencia_goles
 
   # ──────────────────────────────────────────
@@ -77,17 +58,12 @@ class Seleccion < ApplicationRecord
       .order(puntos: :desc, diferencia_goles: :desc, goles_favor: :desc)
   }
 
-  scope :clasificados, -> { joins(:grupo).where(grupos: { clasificado: true }) }
+  #scope :clasificados, -> { joins(:grupo).where(grupos: { clasificado: true }) }
 
   # ──────────────────────────────────────────
-  # Métodos públicos de negocio
+  # Métodos públicos 
   # ──────────────────────────────────────────
 
-  # Registra el resultado de un partido de fase de grupos y actualiza
-  # automáticamente puntos, goles y diferencia.
-  #
-  # @param goles_hechos    [Integer] goles anotados por esta selección
-  # @param goles_recibidos [Integer] goles recibidos por esta selección
   def registrar_resultado_grupo(goles_hechos, goles_recibidos)
     self.goles_favor  += goles_hechos
     self.goles_contra += goles_recibidos
@@ -102,16 +78,6 @@ class Seleccion < ApplicationRecord
     save!
   end
 
-  # Cambia la selección a otro grupo.
-  # Permite reasignar equipo si hubo un error de registro.
-  #
-  # @param nuevo_grupo [Grupo] instancia del nuevo grupo
-  def cambiar_grupo(nuevo_grupo)
-    update!(grupo: nuevo_grupo)
-  end
-
-  # Reinicia todas las estadísticas de la selección a cero.
-  # Útil si se anulan resultados o se reinicia el torneo.
   def reiniciar_estadisticas!
     update!(
       puntos:           0,
@@ -121,7 +87,6 @@ class Seleccion < ApplicationRecord
     )
   end
 
-  # Devuelve todos los partidos jugados (como local o visitante)
   def todos_los_partidos
     Partido.where(
       "seleccion_local_id = :id OR seleccion_visitante_id = :id",
@@ -129,7 +94,6 @@ class Seleccion < ApplicationRecord
     )
   end
 
-  # Posición actual dentro de su grupo (calculada en tiempo real)
   def posicion_en_grupo
     Seleccion.tabla_de_grupo(grupo_id).pluck(:id).index(id).to_i + 1
   end
@@ -208,11 +172,6 @@ class Seleccion < ApplicationRecord
   # Métodos de clase
   # ──────────────────────────────────────────
 
-  # Devuelve los mejores terceros lugares de todos los grupos,
-  # ordenados por criterios FIFA (puntos → diferencia → goles favor).
-  # Se usan para completar los 16avos en el formato de 48 equipos.
-  #
-  # @param cantidad [Integer] cuántos terceros clasifican (default 8)
   def self.mejores_terceros(cantidad = 8)
     Grupo.all.map { |g| tabla_de_grupo(g.id).offset(2).first }
          .compact
@@ -225,28 +184,13 @@ class Seleccion < ApplicationRecord
   # ──────────────────────────────────────────
   # Callbacks privados
   # ──────────────────────────────────────────
-
-  # Genera el acrónimo a partir del nombre del país si aún no tiene uno.
-  # Solo se autogenera si el campo está vacío; si el usuario ingresó uno
-  # manualmente (ej. desde el form), ese valor se respeta.
   def generar_acronimo
     return if acronimo.present?
 
     self.acronimo = construir_acronimo(nombre)
   end
 
-  # Construye el acrónimo a partir del nombre del país.
-  #
-  # Lógica:
-  #   - Elimina palabras vacías (artículos, preposiciones) que no aportan identidad.
-  #   - Si quedan 2 o más palabras relevantes → toma la primera letra de cada una
-  #     (hasta 3 letras).
-  #   - Si solo hay 1 palabra → toma las primeras 3 letras de esa palabra.
-  #   - Si el acrónimo base ya existe en la BD, agrega un número al final para
-  #     evitar colisiones (ej. "BR2").
-  #
-  # @param nombre_pais [String]
-  # @return [String] acrónimo en mayúsculas, máximo 3 caracteres
+
   def construir_acronimo(nombre_pais)
     return "" if nombre_pais.blank?
 
@@ -259,24 +203,15 @@ class Seleccion < ApplicationRecord
       .reject { |palabra| palabras_vacias.include?(palabra.downcase) }
 
     base = if palabras_relevantes.length >= 2
-             # "Costa Rica" → ["Costa", "Rica"] → "CR"
-             # "Arabia Saudita" → ["Arabia", "Saudita"] → "AS"
-             # "Corea del Sur" → ["Corea", "Sur"] → "CS"
              palabras_relevantes.first(3).map { |p| p[0] }.join.upcase
            else
-             # "Brasil" → "BRA"
-             # "Alemania" → "ALE"
+             
              nombre_pais.gsub(/\s+/, "").first(3).upcase
            end
 
     resolver_colision(base)
   end
 
-  # Si el acrónimo base ya está tomado por otro equipo, agrega un número.
-  # Ej: si "CR" ya existe, prueba "CR2", "CR3", etc.
-  #
-  # @param base [String] acrónimo candidato
-  # @return [String] acrónimo único
   def resolver_colision(base)
     candidato = base
     contador  = 2

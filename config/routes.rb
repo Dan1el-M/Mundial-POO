@@ -8,10 +8,10 @@ Rails.application.routes.draw do
   resources :group_matches, except: :show
   resources :knockout_matches, only: %i[index edit update]
 
-  resource :tournament, only: [] do
-    get :standings
-    get :qualified
-    get :champion
-    post :generate_bracket
+  resources :torneos do
+    member do
+      post :avanzar_etapa
+      get  :podio
+    end
   end
 end
