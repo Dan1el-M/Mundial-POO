@@ -20,6 +20,8 @@ class Torneo < ApplicationRecord
   TOTAL_GRUPOS      = 12
   EQUIPOS_POR_GRUPO = 4
   TOTAL_SELECCIONES = 48
+  NUMERO_PARTIDO_TERCER_LUGAR = 103
+  NUMERO_PARTIDO_FINAL = 104
 
   # ──────────────────────────────────────────
   # Asociaciones
@@ -54,6 +56,10 @@ class Torneo < ApplicationRecord
 
   before_validation :asignar_etapa_inicial, on: :create
 
+  def self.actual
+    first || create!(nombre: "Mundial 2026")
+  end
+
   # ──────────────────────────────────────────
   # Consultas de estado
   # ──────────────────────────────────────────
@@ -65,7 +71,7 @@ class Torneo < ApplicationRecord
 
   # Devuelve true si el torneo ya tiene un campeón definido.
   def finalizado?
-    campeon_id.present?
+    campeon_id.present? && subcampeon_id.present? && tercero_id.present?
   end
 
   # ──────────────────────────────────────────
@@ -133,18 +139,32 @@ class Torneo < ApplicationRecord
   # Establece campeón, subcampeón y tercer lugar al concluir el torneo.
   # Solo actúa cuando los partidos de final y tercer_lugar están finalizados.
   def determinar_podio!
-    partido_final        = partidos_de_eliminacion
-                           .find_by(numero_partido: numero_partido_final)
-    partido_tercer_lugar = partidos_de_eliminacion
-                           .find_by(numero_partido: numero_partido_tercer_lugar)
+    return false unless podio_listo?
 
-    return unless partido_final&.finalizado? && partido_tercer_lugar&.finalizado?
+    partido_final = partido_final()
+    partido_tercer_lugar = partido_tercer_lugar()
+    asociar_partido_de_cierre!(partido_final)
+    asociar_partido_de_cierre!(partido_tercer_lugar)
 
     update!(
       campeon_id:    partido_final.ganador_id,
       subcampeon_id: perdedor_de(partido_final)&.id,
-      tercero_id:    partido_tercer_lugar.ganador_id
+      tercero_id:    partido_tercer_lugar.ganador_id,
+      etapa_actual:  "final"
     )
+
+    true
+  end
+
+  def podio_listo?
+    partido_final = partido_final()
+    partido_tercer_lugar = partido_tercer_lugar()
+
+    partido_final&.finalizado? &&
+      partido_final.ganador_id.present? &&
+      perdedor_de(partido_final).present? &&
+      partido_tercer_lugar&.finalizado? &&
+      partido_tercer_lugar.ganador_id.present?
   end
 
   # ──────────────────────────────────────────
@@ -177,6 +197,14 @@ class Torneo < ApplicationRecord
   # @return [ActiveRecord::Relation]
   def partidos_finalizados_en_etapa
     partidos_en_etapa_actual.finalizados
+  end
+
+  def partido_final
+    partido_de_cierre(NUMERO_PARTIDO_FINAL)
+  end
+
+  def partido_tercer_lugar
+    partido_de_cierre(NUMERO_PARTIDO_TERCER_LUGAR)
   end
 
   # ──────────────────────────────────────────
@@ -265,12 +293,23 @@ class Torneo < ApplicationRecord
   end
 
   # Número de partido para la final (104).
+  def partido_de_cierre(numero)
+    partidos_de_eliminacion.find_by(numero_partido: numero) ||
+      Partido.eliminacion_directa.find_by(numero_partido: numero, torneo_id: nil)
+  end
+
+  def asociar_partido_de_cierre!(partido)
+    return if partido.blank? || partido.torneo_id.present?
+
+    partido.update_column(:torneo_id, id)
+  end
+
   def numero_partido_final
-    104
+    NUMERO_PARTIDO_FINAL
   end
 
   # Número de partido para tercer lugar (103).
   def numero_partido_tercer_lugar
-    103
+    NUMERO_PARTIDO_TERCER_LUGAR
   end
 end
