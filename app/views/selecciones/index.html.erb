@@ -1,0 +1,278 @@
+<header class="mb-section-margin">
+  <h1 class="font-headline-lg text-headline-lg text-primary-container">Gestion de Selecciones y Grupos</h1>
+  <p class="font-body-md text-body-md text-on-surface-variant mt-2">Configura los participantes y la estructura competitiva del torneo mundial.</p>
+</header>
+
+<% if defined?(@validation_errors) && @validation_errors.present? %>
+  <div class="mb-6 bg-error-container border border-error/20 p-4 rounded-lg">
+    <h3 class="font-headline-md text-on-error-container mb-2">Se encontraron los siguientes errores:</h3>
+    <ul class="list-disc pl-5 text-on-error-container">
+      <% @validation_errors.each do |err| %>
+        <li><%= err %></li>
+      <% end %>
+    </ul>
+  </div>
+<% elsif flash[:alert].present? %>
+  <div class="mb-6 bg-error-container border border-error/20 p-4 rounded-lg">
+    <p class="text-on-error-container"><%= flash[:alert] %></p>
+  </div>
+<% end %>
+
+<% if flash[:notice].present? %>
+  <div class="mb-6 bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
+    <p class="text-emerald-800 font-semibold"><%= flash[:notice] %></p>
+  </div>
+<% end %>
+
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-card-gap items-start">
+  <section class="xl:col-span-4 space-y-card-gap">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-4">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">add_moderator</span>
+        <h2 class="font-title-lg text-title-lg text-primary-container">Nueva Seleccion</h2>
+      </div>
+
+      <%= form_with model: (@seleccion || Seleccion.new), url: selecciones_path, local: true, class: "space-y-4", data: { turbo: false } do |f| %>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <%= f.label :nombre, "Nombre del Pais", class: "font-label-sm text-label-sm text-on-surface-variant block" %>
+            <%= f.text_field :nombre, placeholder: "Ej. Mexico", class: "w-full border-outline-variant rounded-lg p-2.5 focus:ring-2 focus:ring-primary-fixed focus:border-primary-fixed transition-all" %>
+          </div>
+          <div class="space-y-1">
+            <%= f.label :acronimo, "Acronimo", class: "font-label-sm text-label-sm text-on-surface-variant block" %>
+            <%= f.text_field :acronimo, placeholder: "Ej. MEX", maxlength: 3, class: "w-full border-outline-variant rounded-lg p-2.5 focus:ring-2 focus:ring-primary-fixed transition-all uppercase" %>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <%= f.label :grupo_id, "Grupo Asignado", class: "font-label-sm text-label-sm text-on-surface-variant block font-bold" %>
+          <%= f.collection_select :grupo_id,
+                                  @grupos,
+                                  :id,
+                                  :letra,
+                                  { prompt: "Seleccione un grupo" },
+                                  { id: "seleccion_grupo_id", class: "w-full border-outline-variant rounded-lg p-3 bg-surface-container-low focus:ring-2 focus:ring-primary-fixed transition-all font-semibold" } %>
+        </div>
+
+        <button class="w-full bg-[#E30613] text-white py-3 rounded-lg font-bold hover:bg-[#c00510] transition-colors shadow-sm flex items-center justify-center gap-2 mt-4" type="submit">
+          <span class="material-symbols-outlined">save</span>
+          Registrar Seleccion
+        </button>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="xl:col-span-8 space-y-card-gap">
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-xl border border-outline-variant">
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide" id="group-filter-buttons">
+        <span class="text-xs font-bold text-on-surface-variant uppercase px-2">Filtrar:</span>
+        <% current_filter = params[:grupo_letra].presence || params[:group_letter].presence || "all" %>
+        <% todos_classes = "whitespace-nowrap px-4 py-1.5 rounded-full text-sm" + (current_filter == "all" ? " bg-primary-container text-white font-semibold" : " bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors") %>
+        <%= link_to "Todos", selecciones_path(grupo_letra: "all"), data: { group_letter: "all" }, class: todos_classes %>
+        <% @grupos.each do |grupo| %>
+          <% group_classes = "whitespace-nowrap px-4 py-1.5 rounded-full text-sm" + (current_filter == grupo.letra ? " bg-primary-container text-white font-semibold" : " bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors") %>
+          <%= link_to "Grupo #{grupo.letra}", selecciones_path(grupo_letra: grupo.letra), data: { group_letter: grupo.letra }, class: group_classes %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-primary-container text-white">
+              <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider">Seleccion</th>
+              <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider">Grupo</th>
+              <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider text-center">Pts</th>
+              <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider text-center">GF/GC</th>
+              <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider">Estatus</th>
+              <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant">
+            <% @selecciones.each do |seleccion| %>
+              <tr class="hover:bg-surface-container-low transition-colors group"
+                  data-seleccion-id="<%= seleccion.id %>"
+                  data-seleccion-nombre="<%= j seleccion.nombre %>"
+                  data-seleccion-acronimo="<%= j seleccion.acronimo %>"
+                  data-seleccion-grupo-id="<%= seleccion.grupo_id %>"
+                  data-seleccion-grupo-letra="<%= seleccion.grupo.letra %>">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-7 bg-surface-container rounded border border-outline-variant overflow-hidden flex items-center justify-center">
+                      <span class="font-bold text-sm text-primary-container"><%= seleccion.acronimo.present? ? seleccion.acronimo.upcase : seleccion.nombre.first(2).upcase %></span>
+                    </div>
+                    <span class="font-title-lg text-body-lg text-primary-container font-bold"><%= seleccion.nombre %></span>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex px-3 py-1 bg-primary/10 text-primary-container rounded-full text-xs font-bold">Grupo <%= seleccion.grupo.letra %></span>
+                </td>
+                <td class="px-6 py-4 text-center font-bold"><%= seleccion.puntos %></td>
+                <td class="px-6 py-4 text-center text-on-surface-variant font-body-md text-body-md"><%= seleccion.goles_favor %> / <%= seleccion.goles_contra %></td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Activo
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <div class="flex justify-end gap-2">
+                    <button type="button" onclick="openEditSeleccionModal(this.closest('tr'))" class="p-2 hover:bg-primary-container/10 text-primary-container rounded-lg transition-colors group-hover:scale-110">
+                      <span class="material-symbols-outlined text-lg">edit</span>
+                    </button>
+                    <button type="button" onclick="openDeleteSeleccionModal(this.closest('tr'))" class="p-2 hover:bg-error-container/20 text-error rounded-lg transition-colors group-hover:scale-110">
+                      <span class="material-symbols-outlined text-lg">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="bg-surface-container px-6 py-3 border-t border-outline-variant flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <span class="text-xs text-on-surface-variant">Mostrando <%= @selecciones.size %> de <%= @total_selecciones %> selecciones</span>
+        <div class="flex gap-1">
+          <% if @pagina_actual > 1 %>
+            <%= link_to selecciones_path(page: @pagina_actual - 1, grupo_letra: params[:grupo_letra]), class: "p-1.5 border border-outline-variant rounded hover:bg-white transition-colors" do %>
+              <span class="material-symbols-outlined text-sm">chevron_left</span>
+            <% end %>
+          <% else %>
+            <button class="p-1.5 border border-outline-variant rounded text-on-surface-variant opacity-50" disabled>
+              <span class="material-symbols-outlined text-sm">chevron_left</span>
+            </button>
+          <% end %>
+          <div class="px-2 py-1 rounded-full border border-outline-variant text-xs text-on-surface-variant flex items-center">Pagina <%= @pagina_actual %> / <%= @total_paginas %></div>
+          <% if @pagina_actual < @total_paginas %>
+            <%= link_to selecciones_path(page: @pagina_actual + 1, grupo_letra: params[:grupo_letra]), class: "p-1.5 border border-outline-variant rounded hover:bg-white transition-colors" do %>
+              <span class="material-symbols-outlined text-sm">chevron_right</span>
+            <% end %>
+          <% else %>
+            <button class="p-1.5 border border-outline-variant rounded text-on-surface-variant opacity-50" disabled>
+              <span class="material-symbols-outlined text-sm">chevron_right</span>
+            </button>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="group-card-grid">
+      <% @grupos.each do |grupo| %>
+        <div class="bg-white p-4 rounded-xl border-l-4 border-primary-container shadow-sm flex flex-col justify-between h-32">
+          <div class="flex justify-between items-start">
+            <span class="font-headline-md text-label-sm uppercase text-on-surface-variant">Grupo <%= grupo.letra %></span>
+            <span class="text-xs font-bold text-on-primary-container bg-primary-fixed px-2 py-0.5 rounded"><%= grupo.selecciones.count %>/4</span>
+          </div>
+          <div class="text-xs text-on-surface-variant mt-2 flex flex-col gap-1">
+            <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> <%= grupo.selecciones.map { |s| (s.acronimo.present? ? s.acronimo.upcase : s.nombre[0, 3].upcase) }.join(", ") %></div>
+          </div>
+          <%= link_to "Ver detalles ->", grupo_path(grupo), class: "text-xs font-bold text-primary-container mt-auto hover:underline text-left" %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>
+
+<div id="delete-seleccion-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4">
+  <div class="relative w-full max-w-md bg-surface-container-lowest rounded-3xl shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-5 border-b border-outline-variant bg-surface-bright">
+      <div>
+        <h2 class="font-headline-md text-headline-md text-primary-container tracking-tight">Eliminar Seleccion</h2>
+        <p class="text-sm text-on-surface-variant mt-1">Esta accion no se puede deshacer.</p>
+      </div>
+      <button type="button" onclick="closeDeleteSeleccionModal()" class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="p-6 space-y-4">
+      <p class="text-on-surface-variant font-body-md">Confirma que deseas eliminar a <span id="delete-seleccion-name" class="font-bold text-on-surface"></span>.</p>
+    </div>
+    <div class="px-6 py-6 bg-surface-container-low flex flex-col sm:flex-row-reverse gap-3">
+      <form id="delete-seleccion-form" action="#" method="post" class="w-full sm:w-auto" data-turbo="false">
+        <input type="hidden" name="_method" value="delete">
+        <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+        <button type="submit" class="w-full sm:w-auto px-8 h-12 bg-error text-on-primary font-bold text-body-lg rounded-lg shadow-md hover:bg-[#c00510] transition-all active:scale-95 flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[20px]">delete</span>
+          Eliminar
+        </button>
+      </form>
+      <button type="button" onclick="closeDeleteSeleccionModal()" class="w-full sm:w-auto px-8 h-12 bg-transparent border border-outline text-on-surface-variant font-bold text-body-lg rounded-lg hover:bg-surface-container-highest transition-all">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="edit-seleccion-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4">
+  <div class="relative w-full max-w-lg bg-surface-container-lowest rounded-3xl shadow-2xl overflow-hidden">
+    <div class="px-6 py-6 flex items-center justify-between bg-primary-container text-on-primary-container border-b border-outline-variant">
+      <h1 class="font-headline-md text-headline-md">Modificar Seleccion</h1>
+      <button type="button" onclick="closeEditSeleccionModal()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-on-primary-container/10 transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <form id="edit-seleccion-form" action="#" method="post" class="p-6 space-y-6" data-turbo="false">
+      <input type="hidden" name="_method" value="patch">
+      <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+      <div class="space-y-5">
+        <div class="space-y-1.5">
+          <label class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" for="edit-seleccion-nombre-input">Nombre del Pais <span class="text-error">*</span></label>
+          <input id="edit-seleccion-nombre-input" name="seleccion[nombre]" class="w-full h-12 bg-surface px-4 rounded-lg border border-outline outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md text-on-surface" placeholder="Ingrese el nombre oficial" type="text" />
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label class="font-label-sm text-label-sm text-on-surface-variant" for="edit-seleccion-acronimo-input">Acronimo <span class="text-error">*</span></label>
+            <input id="edit-seleccion-acronimo-input" name="seleccion[acronimo]" maxlength="3" class="w-full h-12 bg-surface px-4 rounded-lg border border-outline outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md text-on-surface uppercase" placeholder="Ej. MEX" type="text" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-label-sm text-label-sm text-on-surface-variant" for="edit-seleccion-grupo-input">Grupo Asignado</label>
+            <select id="edit-seleccion-grupo-input" name="seleccion[grupo_id]" class="w-full h-12 bg-surface px-4 rounded-lg border border-outline outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md text-on-surface">
+              <% @grupos.each do |grupo| %>
+                <option value="<%= grupo.id %>">Grupo <%= grupo.letra %></option>
+              <% end %>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="pt-6 flex flex-col sm:flex-row gap-3 border-t border-outline-variant mt-4">
+        <button type="button" onclick="closeEditSeleccionModal()" class="flex-1 h-12 flex items-center justify-center text-fifa-navy border-2 border-fifa-navy rounded-lg hover:bg-fifa-navy/5 transition-all">Cancelar</button>
+        <button type="submit" class="flex-1 h-12 flex items-center justify-center bg-fifa-red text-white border-2 border-fifa-red rounded-lg hover:opacity-90 shadow-lg shadow-fifa-red/20 active:scale-95 transition-all">Guardar Cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const deleteSeleccionModal = document.getElementById('delete-seleccion-modal');
+  const deleteSeleccionName = document.getElementById('delete-seleccion-name');
+  const deleteSeleccionForm = document.getElementById('delete-seleccion-form');
+  const editSeleccionModal = document.getElementById('edit-seleccion-modal');
+  const editSeleccionForm = document.getElementById('edit-seleccion-form');
+  const editSeleccionNombreInput = document.getElementById('edit-seleccion-nombre-input');
+  const editSeleccionAcronimoInput = document.getElementById('edit-seleccion-acronimo-input');
+  const editSeleccionGrupoInput = document.getElementById('edit-seleccion-grupo-input');
+
+  function closeDeleteSeleccionModal() {
+    if (deleteSeleccionModal) deleteSeleccionModal.classList.add('hidden');
+  }
+
+  function openDeleteSeleccionModal(row) {
+    if (!row || !deleteSeleccionModal) return;
+    deleteSeleccionName.textContent = row.dataset.seleccionNombre || 'esta seleccion';
+    deleteSeleccionForm.action = `/selecciones/${row.dataset.seleccionId}`;
+    deleteSeleccionModal.classList.remove('hidden');
+  }
+
+  function closeEditSeleccionModal() {
+    if (editSeleccionModal) editSeleccionModal.classList.add('hidden');
+  }
+
+  function openEditSeleccionModal(row) {
+    if (!row || !editSeleccionModal) return;
+    editSeleccionNombreInput.value = row.dataset.seleccionNombre || '';
+    editSeleccionAcronimoInput.value = row.dataset.seleccionAcronimo || '';
+    editSeleccionGrupoInput.value = row.dataset.seleccionGrupoId || '';
+    editSeleccionForm.action = `/selecciones/${row.dataset.seleccionId}`;
+    editSeleccionModal.classList.remove('hidden');
+  }
+</script>

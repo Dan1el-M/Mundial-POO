@@ -12,4 +12,5 @@ end
 
 puts "Seeded #{Grupo.count} grupos"
 
-
+# db/seeds.rb
+load Rails.root.join('db', 'seeds2.rb')

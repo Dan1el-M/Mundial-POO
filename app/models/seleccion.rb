@@ -8,12 +8,14 @@ class Seleccion < ApplicationRecord
   has_many :partidos_como_local,
            class_name:  "Partido",
            foreign_key: :seleccion_local_id,
-           dependent:   :nullify
+           dependent:   :restrict_with_error,
+           inverse_of: :seleccion_local
 
   has_many :partidos_como_visitante,
            class_name:  "Partido",
            foreign_key: :seleccion_visitante_id,
-           dependent:   :nullify
+           dependent:   :restrict_with_error,
+           inverse_of: :seleccion_visitante
 
   # ──────────────────────────────────────────
   # Validaciones
