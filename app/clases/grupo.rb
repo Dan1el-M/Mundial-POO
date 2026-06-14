@@ -15,6 +15,7 @@ class Grupo < ApplicationRecord
   # Asociaciones
   # ──────────────────────────────────────────
 
+  belongs_to :torneo, optional: true
   has_many :selecciones, dependent: :destroy
   has_many :partidos, dependent: :destroy
 

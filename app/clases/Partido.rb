@@ -22,6 +22,7 @@ class Partido < ApplicationRecord
   # Asociaciones
   # ──────────────────────────────────────────
 
+  belongs_to :torneo, optional: true
   belongs_to :seleccion_local,
              class_name: "Seleccion"
   belongs_to :seleccion_visitante,
