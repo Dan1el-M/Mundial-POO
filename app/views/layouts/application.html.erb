@@ -303,10 +303,10 @@
           <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
           <span class="font-label-sm text-label-sm">Grupos y Equipos</span>
         <% end %>
-        <a class="flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all" href="#">
+        <%= link_to group_matches_path, class: 'flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all nav-link' do %>
           <span class="material-symbols-outlined">calendar_month</span>
-          <span class="font-label-sm text-label-sm">Calendario</span>
-        </a>
+          <span class="font-label-sm text-label-sm">Calendario y Partidos</span>
+        <% end %>
         <a class="flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all" href="#">
           <span class="material-symbols-outlined">account_tree</span>
           <span class="font-label-sm text-label-sm">Fase Eliminatoria</span>
@@ -315,10 +315,6 @@
           <span class="material-symbols-outlined">leaderboard</span>
           <span class="font-label-sm text-label-sm">Estadísticas</span>
         </a>
-        <%= link_to group_matches_path, class: 'flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all nav-link' do %>
-          <span class="material-symbols-outlined">sports_soccer</span>
-          <span class="font-label-sm text-label-sm">Partidos</span>
-        <% end %>
       </nav>
     </aside>
 

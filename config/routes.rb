@@ -5,7 +5,12 @@ Rails.application.routes.draw do
 
   resources :teams, except: :show
   resources :groups
-  resources :group_matches, except: :show
+  resources :group_matches, except: :show do
+    collection do
+      post :generate_calendar
+      get :calendar
+    end
+  end
   resources :knockout_matches, only: %i[index edit update]
 
   resource :tournament, only: [] do

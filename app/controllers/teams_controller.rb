@@ -8,11 +8,19 @@ class TeamsController < ApplicationController
     @groups = Group.ordered.includes(:teams)
     @available_group_letters = Group::LETTERS - @groups.pluck(:letter)
     @current_page = params[:page].to_i.positive? ? params[:page].to_i : 1
-    @total_teams = Team.count
+    # Build a scope that can be filtered before counting/pagination
+    scope = Team.includes(:group).order(:name)
+
+    # Allow filtering by group letter via params[:group_letter]
+    if params[:group_letter].present? && params[:group_letter] != 'all'
+      scope = scope.joins(:group).where(groups: { letter: params[:group_letter] })
+    end
+
+    @total_teams = scope.count
     @total_pages = (@total_teams / PER_PAGE.to_f).ceil
     @total_pages = 1 if @total_pages.zero?
     @current_page = @total_pages if @current_page > @total_pages
-    @teams = Team.includes(:group).order(:name).offset((@current_page - 1) * PER_PAGE).limit(PER_PAGE)
+    @teams = scope.offset((@current_page - 1) * PER_PAGE).limit(PER_PAGE)
   end
 
   def new
@@ -29,11 +37,17 @@ class TeamsController < ApplicationController
       @groups = Group.ordered.includes(:teams)
       @available_group_letters = Group::LETTERS - @groups.pluck(:letter)
       @current_page = params[:page].to_i.positive? ? params[:page].to_i : 1
-      @total_teams = Team.count
+
+      scope = Team.includes(:group).order(:name)
+      if params[:group_letter].present? && params[:group_letter] != 'all'
+        scope = scope.joins(:group).where(groups: { letter: params[:group_letter] })
+      end
+
+      @total_teams = scope.count
       @total_pages = (@total_teams / PER_PAGE.to_f).ceil
       @total_pages = 1 if @total_pages.zero?
       @current_page = @total_pages if @current_page > @total_pages
-      @teams = Team.includes(:group).order(:name).offset((@current_page - 1) * PER_PAGE).limit(PER_PAGE)
+      @teams = scope.offset((@current_page - 1) * PER_PAGE).limit(PER_PAGE)
 
       # Build Spanish-friendly error messages from ActiveModel errors
       raw_messages = @team.errors.full_messages
