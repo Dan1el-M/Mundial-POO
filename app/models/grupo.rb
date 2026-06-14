@@ -16,8 +16,14 @@ class Grupo < ApplicationRecord
   # ──────────────────────────────────────────
 
   belongs_to :torneo, optional: true
-  has_many :selecciones, dependent: :destroy
-  has_many :partidos, dependent: :destroy
+  has_many :selecciones, 
+            -> { order(:nombre) },
+            dependent: :restrict_with_error,
+            inverse_of: :grupo
+
+  has_many :partidos,
+            -> { where(tipo_partido: nil).order(:id) },
+            dependent: :destroy
 
   # ──────────────────────────────────────────
   # Validaciones

@@ -3,8 +3,9 @@ Rails.application.routes.draw do
 
   root "posiciones#index"
 
-  resources :teams, except: :show
-  resources :groups
+  resources :selecciones, except: :show
+  resources :grupos
+
   resources :group_matches, except: :show do
     collection do
       post :generate_calendar
@@ -16,12 +17,6 @@ Rails.application.routes.draw do
   resources :grupos do
     member do
       get :tabla
-      get :partidos
-    end
-  end
-
-  resources :selecciones do
-    member do
       get :partidos
     end
   end

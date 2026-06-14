@@ -299,7 +299,7 @@
           <span class="material-symbols-outlined">dashboard</span>
           <span class="font-label-sm text-label-sm">Panel de Control</span>
         </a>
-        <%= link_to teams_path, class: 'flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all nav-link' do %>
+        <%= link_to selecciones_path, class: 'flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all nav-link' do %>
           <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
           <span class="font-label-sm text-label-sm">Grupos y Equipos</span>
         <% end %>
@@ -475,7 +475,7 @@
       }
 
       async function fetchGroups() {
-        const response = await fetch('<%= groups_path(format: :json) %>', {
+        const response = await fetch('<%= grupos_path(format: :json) %>', {
           headers: { 'Accept': 'application/json' }
         });
         if (!response.ok) return null;
@@ -545,7 +545,7 @@
           const formData = new FormData();
           formData.append('group[letter]', groupSelect.value);
 
-          const response = await fetch('<%= groups_path %>', {
+          const response = await fetch('<%= grupos_path %>', {
             method: 'POST',
             headers: {
               'X-CSRF-Token': csrfToken,
