@@ -1,0 +1,87 @@
+<% podio = [
+  { posicion: 2, titulo: "Pais #2", seleccion: @subcampeon, altura: "min-h-[400px]", orden: "md:order-1", borde: "border-slate-700", etiqueta: "Subcampeón" },
+  { posicion: 1, titulo: "Pais #1", seleccion: @campeon, altura: "min-h-[460px]", orden: "md:order-2", borde: "border-yellow-500", etiqueta: "Campeón" },
+  { posicion: 3, titulo: "Pais #3", seleccion: @tercero, altura: "min-h-[380px]", orden: "md:order-3", borde: "border-amber-700", etiqueta: "Tercer lugar" }
+] %>
+
+<header class="mb-section-margin flex flex-col md:flex-row md:items-end justify-between gap-gutter">
+  <div>
+    <h1 class="font-headline-lg text-headline-lg text-primary mb-2">Resultados finales</h1>
+    <p class="text-on-surface-variant font-body-lg">Podio de los tres primeros lugares del torneo</p>
+  </div>
+
+  <%= link_to fase_eliminatoria_path, class: "bg-surface-container-high text-primary px-5 py-3 rounded-lg font-bold hover:bg-outline-variant transition-colors flex items-center gap-2" do %>
+    <span class="material-symbols-outlined">arrow_back</span>
+    Volver a fase eliminatoria
+  <% end %>
+</header>
+
+<% unless @podio_disponible %>
+  <section class="bg-white border border-outline-variant rounded-xl p-8 mb-card-gap shadow-sm">
+    <div class="flex flex-col md:flex-row md:items-center gap-5">
+      <div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-4xl">pending</span>
+      </div>
+      <div>
+        <h2 class="font-headline-md text-headline-md text-primary mb-1">Podio pendiente</h2>
+        <p class="text-on-surface-variant">
+          El podio se mostrara automaticamente cuando esten finalizados el partido por tercer lugar y la final.
+        </p>
+      </div>
+    </div>
+  </section>
+<% end %>
+
+<section class="bg-white border border-outline-variant rounded-xl p-6 md:p-10 shadow-sm">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 md:items-end">
+    <% podio.each do |puesto| %>
+      <% seleccion = puesto[:seleccion] %>
+      <% estadisticas = seleccion&.resumen_estadisticas || {} %>
+      <% diferencia = estadisticas[:diferencia_goles] || 0 %>
+
+      <article class="<%= puesto[:orden] %> flex flex-col items-center min-w-0">
+        <h2 class="font-headline-md text-headline-md text-primary text-center mb-3 max-w-xs break-words">
+          <%= seleccion&.nombre || puesto[:titulo] %>
+        </h2>
+
+        <div class="w-full max-w-xs <%= puesto[:altura] %> border-4 <%= puesto[:borde] %> bg-surface-container-lowest p-4 flex flex-col shadow-sm overflow-hidden">
+          <div class="min-w-0">
+            <div class="flex items-center justify-between gap-3 mb-4">
+              <span class="font-black text-4xl text-primary shrink-0">#<%= puesto[:posicion] %></span>
+              <span class="text-[11px] font-bold uppercase text-on-surface-variant text-right leading-tight break-words"><%= puesto[:etiqueta] %></span>
+            </div>
+
+            <h3 class="font-headline-md text-[24px] leading-7 text-primary mb-3">Estadísticas</h3>
+
+            <dl class="grid grid-cols-2 gap-2 text-sm">
+              <div class="bg-surface-container-low p-2 rounded min-w-0">
+                <dt class="text-on-surface-variant">PTS</dt>
+                <dd class="font-black text-primary"><%= estadisticas[:puntos] || 0 %></dd>
+              </div>
+              <div class="bg-surface-container-low p-2 rounded min-w-0">
+                <dt class="text-on-surface-variant">PJ</dt>
+                <dd class="font-black text-primary"><%= estadisticas[:partidos_jugados] || 0 %></dd>
+              </div>
+              <div class="bg-surface-container-low p-2 rounded min-w-0">
+                <dt class="text-on-surface-variant">GF</dt>
+                <dd class="font-black text-primary"><%= estadisticas[:goles_favor] || 0 %></dd>
+              </div>
+              <div class="bg-surface-container-low p-2 rounded min-w-0">
+                <dt class="text-on-surface-variant">GC</dt>
+                <dd class="font-black text-primary"><%= estadisticas[:goles_contra] || 0 %></dd>
+              </div>
+              <div class="bg-surface-container-low p-2 rounded col-span-2 min-w-0">
+                <dt class="text-on-surface-variant">DG</dt>
+                <dd class="font-black text-primary"><%= diferencia.positive? ? "+#{diferencia}" : diferencia %></dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="mt-auto pt-4 flex justify-center">
+            <%= bandera_seleccion(seleccion, wrapper_class: "w-36 max-w-full h-16 border-4 border-cyan-200", text_class: "text-2xl truncate px-2") %>
+          </div>
+        </div>
+      </article>
+    <% end %>
+  </div>
+</section>

@@ -109,6 +109,17 @@ class CampeonesController < ApplicationController
                                .first
   end
 
+  def podio
+    @torneo = Torneo.actual
+    @torneo.determinar_podio! if @torneo.podio_listo? && !@torneo.finalizado?
+    @torneo.reload
+
+    @campeon = @torneo.campeon
+    @subcampeon = @torneo.subcampeon
+    @tercero = @torneo.tercero
+    @podio_disponible = @torneo.finalizado?
+  end
+
   private
 
   # ──────────────────────────────────────────

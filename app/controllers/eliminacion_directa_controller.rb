@@ -136,6 +136,7 @@ class EliminacionDirectaController < ApplicationController
     @clasificados_count = @clasificados[:total_clasificados].count
     @etapas_etiquetas = ETAPAS_DE_ELIMINACION
     @partidos_por_etapa = build_partidos_por_etapa
+    @resultados_disponibles = resultados_finales_disponibles?
 
     if @fase_grupos_completa && @partidos_por_etapa[:dieciseisavos].empty? && @clasificados_count == 32
       generar_dieciseisavos_iniciales
@@ -146,6 +147,7 @@ class EliminacionDirectaController < ApplicationController
     if @fase_grupos_completa && @partidos_por_etapa[:dieciseisavos].any?
       generar_siguiente_ronda_automatico
       @partidos_por_etapa = build_partidos_por_etapa
+      @resultados_disponibles = resultados_finales_disponibles?
     end
 
     render template: "fase_de_grupos/fase_eliminatoria"
@@ -230,6 +232,12 @@ class EliminacionDirectaController < ApplicationController
                          .where(numero_partido: rango)
                          .order(:numero_partido)
     end
+  end
+
+  def resultados_finales_disponibles?
+    partidos = Partido.eliminacion_directa
+
+    partidos.count == 32 && partidos.where.not(estado: "finalizado").none?
   end
 
   def generar_dieciseisavos_iniciales

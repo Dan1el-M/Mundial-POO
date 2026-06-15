@@ -5,10 +5,18 @@
       <h2 class="font-headline-lg text-headline-lg text-primary uppercase tracking-tight">Fase Eliminatoria</h2>
       <p class="text-body-lg text-outline">Gestión global de llaves y avance automático del torneo</p>
     </div>
-    <button type="submit" class="bg-[#001B4D] text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-primary transition-all shadow-md active:scale-95">
+    <div class="flex flex-col sm:flex-row gap-3">
+      <% if @resultados_disponibles %>
+        <%= link_to podio_campeones_path, class: "bg-surface-container-high text-primary px-6 py-3 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-outline-variant transition-all shadow-md active:scale-95" do %>
+          <span class="material-symbols-outlined">leaderboard</span>
+          Ver resultados
+        <% end %>
+      <% end %>
+      <button type="submit" class="bg-[#001B4D] text-white px-6 py-3 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-primary transition-all shadow-md active:scale-95">
       <span class="material-symbols-outlined">auto_mode</span>
       Avanzar de Fase Automáticamente
-    </button>
+      </button>
+    </div>
   </header>
 
   <!-- Bracket Canvas -->
@@ -33,14 +41,14 @@
                   </div>
                   <div class="p-3 space-y-4">
                     <div class="grid grid-cols-12 gap-3 items-center">
-                      <div class="col-span-5 flex items-center gap-2 text-primary font-bold">
-                        <span class="w-6 h-4 bg-blue-700 rounded-sm"></span>
+                      <div class="col-span-5 flex items-center gap-2 text-black font-bold">
+                        <%= bandera_seleccion(partido.seleccion_local, wrapper_class: "w-7 h-5 rounded-sm shrink-0", text_class: "text-[10px]") %>
                         <span><%= partido.seleccion_local.acronimo %></span>
                       </div>
                       <div class="col-span-2 text-center text-sm text-outline-variant">vs</div>
-                      <div class="col-span-5 flex items-center justify-end gap-2 text-red-600 font-bold">
+                      <div class="col-span-5 flex items-center justify-end gap-2 text-black font-bold">
                         <span><%= partido.seleccion_visitante.acronimo %></span>
-                        <span class="w-6 h-4 rounded-sm bg-red-600"></span>
+                        <%= bandera_seleccion(partido.seleccion_visitante, wrapper_class: "w-7 h-5 rounded-sm shrink-0", text_class: "text-[10px]") %>
                       </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">

@@ -36,7 +36,7 @@
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-1">
             <%= f.label :nombre, "Nombre del Pais", class: "font-label-sm text-label-sm text-on-surface-variant block" %>
-            <%= f.text_field :nombre, placeholder: "Ej. Mexico", class: "w-full border-outline-variant rounded-lg p-2.5 focus:ring-2 focus:ring-primary-fixed focus:border-primary-fixed transition-all" %>
+            <%= f.text_field :nombre, placeholder: "Ej. México", class: "w-full border-outline-variant rounded-lg p-2.5 focus:ring-2 focus:ring-primary-fixed focus:border-primary-fixed transition-all" %>
           </div>
           <div class="space-y-1">
             <%= f.label :acronimo, "Acronimo", class: "font-label-sm text-label-sm text-on-surface-variant block" %>
@@ -52,6 +52,20 @@
                                   :letra,
                                   { prompt: "Seleccione un grupo" },
                                   { id: "seleccion_grupo_id", class: "w-full border-outline-variant rounded-lg p-3 bg-surface-container-low focus:ring-2 focus:ring-primary-fixed transition-all font-semibold" } %>
+        </div>
+
+        <div class="space-y-2">
+          <%= f.label :bandera_url, "Bandera", class: "font-label-sm text-label-sm text-on-surface-variant block font-bold" %>
+          <div class="flex gap-2">
+            <%= f.url_field :bandera_url,
+                            id: "seleccion_bandera_url",
+                            placeholder: "https://ejemplo.com/bandera.png",
+                            class: "w-full border-outline-variant rounded-lg p-2.5 focus:ring-2 focus:ring-primary-fixed transition-all" %>
+            <button type="button" data-flag-search-target="new" class="px-3 rounded-lg border border-outline-variant text-primary-container hover:bg-surface-container-high transition-colors" title="Buscar bandera">
+              <span class="material-symbols-outlined">search</span>
+            </button>
+          </div>
+          <p class="text-xs text-on-surface-variant">Puedes pegar una URL. Si queda vacio, se mostrara el acronimo.</p>
         </div>
 
         <button class="w-full bg-[#E30613] text-white py-3 rounded-lg font-bold hover:bg-[#c00510] transition-colors shadow-sm flex items-center justify-center gap-2 mt-4" type="submit">
@@ -95,13 +109,12 @@
                   data-seleccion-id="<%= seleccion.id %>"
                   data-seleccion-nombre="<%= j seleccion.nombre %>"
                   data-seleccion-acronimo="<%= j seleccion.acronimo %>"
+                  data-seleccion-bandera-url="<%= j seleccion.bandera_url.to_s %>"
                   data-seleccion-grupo-id="<%= seleccion.grupo_id %>"
                   data-seleccion-grupo-letra="<%= seleccion.grupo.letra %>">
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-3">
-                    <div class="w-10 h-7 bg-surface-container rounded border border-outline-variant overflow-hidden flex items-center justify-center">
-                      <span class="font-bold text-sm text-primary-container"><%= seleccion.acronimo.present? ? seleccion.acronimo.upcase : seleccion.nombre.first(2).upcase %></span>
-                    </div>
+                    <%= bandera_seleccion(seleccion, wrapper_class: "w-10 h-7 rounded", text_class: "text-sm") %>
                     <span class="font-title-lg text-body-lg text-primary-container font-bold"><%= seleccion.nombre %></span>
                   </div>
                 </td>
@@ -219,6 +232,16 @@
           <label class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" for="edit-seleccion-nombre-input">Nombre del Pais <span class="text-error">*</span></label>
           <input id="edit-seleccion-nombre-input" name="seleccion[nombre]" class="w-full h-12 bg-surface px-4 rounded-lg border border-outline outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md text-on-surface" placeholder="Ingrese el nombre oficial" type="text" />
         </div>
+        <div class="space-y-1.5">
+          <label class="font-label-sm text-label-sm text-on-surface-variant" for="edit-seleccion-bandera-url-input">Bandera</label>
+          <div class="flex gap-2">
+            <input id="edit-seleccion-bandera-url-input" name="seleccion[bandera_url]" class="w-full h-12 bg-surface px-4 rounded-lg border border-outline outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md text-on-surface" placeholder="https://ejemplo.com/bandera.png" type="url" />
+            <button type="button" data-flag-search-target="edit" class="h-12 px-4 rounded-lg border border-outline text-primary-container hover:bg-surface-container-high transition-colors" title="Buscar bandera">
+              <span class="material-symbols-outlined">search</span>
+            </button>
+          </div>
+          <p class="text-xs text-on-surface-variant">Si queda vacio, se mostrara el acronimo.</p>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="space-y-1.5">
             <label class="font-label-sm text-label-sm text-on-surface-variant" for="edit-seleccion-acronimo-input">Acronimo <span class="text-error">*</span></label>
@@ -250,7 +273,9 @@
   const editSeleccionForm = document.getElementById('edit-seleccion-form');
   const editSeleccionNombreInput = document.getElementById('edit-seleccion-nombre-input');
   const editSeleccionAcronimoInput = document.getElementById('edit-seleccion-acronimo-input');
+  const editSeleccionBanderaUrlInput = document.getElementById('edit-seleccion-bandera-url-input');
   const editSeleccionGrupoInput = document.getElementById('edit-seleccion-grupo-input');
+  const nuevaSeleccionNombreInput = document.getElementById('seleccion_nombre');
 
   function closeDeleteSeleccionModal() {
     if (deleteSeleccionModal) deleteSeleccionModal.classList.add('hidden');
@@ -271,8 +296,18 @@
     if (!row || !editSeleccionModal) return;
     editSeleccionNombreInput.value = row.dataset.seleccionNombre || '';
     editSeleccionAcronimoInput.value = row.dataset.seleccionAcronimo || '';
+    editSeleccionBanderaUrlInput.value = row.dataset.seleccionBanderaUrl || '';
     editSeleccionGrupoInput.value = row.dataset.seleccionGrupoId || '';
     editSeleccionForm.action = `/selecciones/${row.dataset.seleccionId}`;
     editSeleccionModal.classList.remove('hidden');
   }
+
+  document.querySelectorAll('[data-flag-search-target]').forEach(button => {
+    button.addEventListener('click', () => {
+      const target = button.dataset.flagSearchTarget;
+      const nombre = target === 'edit' ? editSeleccionNombreInput.value : nuevaSeleccionNombreInput.value;
+      const termino = nombre && nombre.trim().length > 0 ? nombre.trim() : 'pais';
+      window.open(`https://www.google.com/search?tbm=isch&q=bandera ${encodeURIComponent(termino)}`, '_blank', 'noopener');
+    });
+  });
 </script>

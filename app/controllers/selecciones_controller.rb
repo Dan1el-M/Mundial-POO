@@ -103,6 +103,7 @@ class SeleccionesController < ApplicationController
     params.require(:seleccion).permit(
       :nombre,
       :acronimo,
+      :bandera_url,
       :grupo_id,
       :puntos,
       :goles_favor,

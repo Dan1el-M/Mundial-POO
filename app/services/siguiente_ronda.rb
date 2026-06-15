@@ -50,6 +50,11 @@ class SiguienteRonda
   end
 
   def avanzar
+    finalizar_partidos_con_marcador!
+
+    resultado_cierre = cerrar_torneo_si_corresponde
+    return resultado_cierre if resultado_cierre.present?
+
     etapa_actual = determinar_etapa_actual
 
     return { ok: false, error: "No hay etapa de eliminación en curso." } if etapa_actual.nil?
@@ -84,6 +89,39 @@ class SiguienteRonda
   end
 
   private
+
+  def finalizar_partidos_con_marcador!
+    Partido.eliminacion_directa
+           .where.not(goles_local: nil, goles_visitante: nil)
+           .where.not(estado: "finalizado")
+           .find_each do |partido|
+      next if partido.empate? &&
+              (partido.goles_penales_local.blank? || partido.goles_penales_visitante.blank?)
+
+      partido.registrar_resultado!(
+        partido.goles_local,
+        partido.goles_visitante,
+        partido.goles_penales_local,
+        partido.goles_penales_visitante
+      )
+    end
+  end
+
+  def cerrar_torneo_si_corresponde
+    partidos_cierre = Partido.eliminacion_directa.where(numero_partido: [103, 104])
+    return nil unless partidos_cierre.exists?
+
+    faltantes = partidos_cierre.reject(&:finalizado?).count
+    if faltantes.positive?
+      return {
+        ok: false,
+        error: "Faltan #{faltantes} partido(s) de cierre por finalizar."
+      }
+    end
+
+    @torneo.determinar_podio!
+    { ok: true, etapa: "podio", partidos_creados: [] }
+  end
 
   def determinar_etapa_actual
     orden_etapas = %w[dieciseisavos octavos cuartos semifinal]
