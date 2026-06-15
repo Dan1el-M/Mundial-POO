@@ -54,13 +54,14 @@ Rails.application.routes.draw do
   end
 
   resources :eliminacion_directa, only: [:index]
+
   get 'validacion_fase_eliminatoria', to: 'eliminacion_directa#index', as: :validacion_fase_eliminatoria
+  
   get "eliminacion_directa/:etapa",
       to: "eliminacion_directa#show",
       as: :etapa_eliminacion_directa
-  get 'eliminacion_directa/fase_eliminatoria', to: 'eliminacion_directa#fase_eliminatoria', as: :fase_eliminatoria
-  # Short alias route for legacy or direct links
-  get '/fase_eliminatoria', to: 'eliminacion_directa#fase_eliminatoria'
+
+  get '/fase_eliminatoria', to: 'eliminacion_directa#fase_eliminatoria', as: :fase_eliminatoria
   patch 'eliminacion_directa/fase_eliminatoria/actualizar_resultados',
         to: 'eliminacion_directa#actualizar_resultados',
         as: :actualizar_resultados_fase_eliminatoria

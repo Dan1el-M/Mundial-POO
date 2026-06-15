@@ -148,6 +148,17 @@ class EliminacionDirectaController < ApplicationController
       @partidos_por_etapa = build_partidos_por_etapa
     end
 
+    if @torneo.podio_listo? && !@torneo.finalizado?
+      @torneo.determinar_podio!
+    end
+
+    @podio_ready = @torneo.podio_listo?
+    @podio = {
+      campeon: @torneo.campeon,
+      subcampeon: @torneo.subcampeon,
+      tercero: @torneo.tercero
+    }
+
     render template: "fase_de_grupos/fase_eliminatoria"
   end
 
@@ -160,6 +171,11 @@ class EliminacionDirectaController < ApplicationController
     resultados.each do |partido_id, partido_params|
       partido = Partido.find_by(id: partido_id)
       next unless partido&.eliminacion_directa?
+
+      if partido.finalizado?
+        errores << "Partido #{partido.numero_partido}: ya finalizado, no se puede editar."
+        next
+      end
 
       goles_local_value = partido_params[:goles_local]
       goles_visitante_value = partido_params[:goles_visitante]
@@ -178,6 +194,9 @@ class EliminacionDirectaController < ApplicationController
           errores << "Partido #{partido.numero_partido}: empate, complete penales."
           next
         end
+      else
+        penales_local = nil
+        penales_visitante = nil
       end
 
       begin
