@@ -58,7 +58,7 @@ class SeleccionesController < ApplicationController
                   status: :see_other
     else
       redirect_to selecciones_url,
-                  alert: @seleccion.errors.full_messages.to_sentence,
+                  alert: mensaje_error_eliminacion(@seleccion),
                   status: :see_other
     end
   end
@@ -123,5 +123,11 @@ class SeleccionesController < ApplicationController
         msg
       end
     end.uniq
+  end
+
+  def mensaje_error_eliminacion(seleccion)
+    return "No se puede eliminar la seleccion porque ya tiene partidos registrados." if seleccion.errors[:base].any?
+
+    seleccion.errors.full_messages.to_sentence
   end
 end

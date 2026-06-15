@@ -54,7 +54,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_15_000000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "acronimo", limit: 3, null: false
-    t.string "bandera_url"
+    t.text "bandera_url"
     t.index ["acronimo"], name: "index_selecciones_on_acronimo", unique: true
     t.index ["grupo_id"], name: "index_selecciones_on_grupo_id"
     t.index ["nombre"], name: "index_selecciones_on_nombre", unique: true

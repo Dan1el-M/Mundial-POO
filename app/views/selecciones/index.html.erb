@@ -57,15 +57,16 @@
         <div class="space-y-2">
           <%= f.label :bandera_url, "Bandera", class: "font-label-sm text-label-sm text-on-surface-variant block font-bold" %>
           <div class="flex gap-2">
-            <%= f.url_field :bandera_url,
-                            id: "seleccion_bandera_url",
-                            placeholder: "https://ejemplo.com/bandera.png",
-                            class: "w-full border-outline-variant rounded-lg p-2.5 focus:ring-2 focus:ring-primary-fixed transition-all" %>
-            <button type="button" data-flag-search-target="new" class="px-3 rounded-lg border border-outline-variant text-primary-container hover:bg-surface-container-high transition-colors" title="Buscar bandera">
+            <%= f.text_field :bandera_url,
+                             id: "seleccion_bandera_url",
+                             placeholder: "URL o imagen seleccionada desde tu equipo",
+                             class: "w-full border-outline-variant rounded-lg p-2.5 focus:ring-2 focus:ring-primary-fixed transition-all" %>
+            <input id="seleccion_bandera_archivo" type="file" accept="image/*" class="hidden" data-flag-file-input="new">
+            <button type="button" data-flag-file-button="new" class="px-3 rounded-lg border border-outline-variant text-primary-container hover:bg-surface-container-high transition-colors" title="Buscar bandera en mi computadora">
               <span class="material-symbols-outlined">search</span>
             </button>
           </div>
-          <p class="text-xs text-on-surface-variant">Puedes pegar una URL. Si queda vacio, se mostrara el acronimo.</p>
+          <p class="text-xs text-on-surface-variant">Puedes pegar una URL o elegir una imagen de tu equipo. Si queda vacio, se mostrara el acronimo.</p>
         </div>
 
         <button class="w-full bg-[#E30613] text-white py-3 rounded-lg font-bold hover:bg-[#c00510] transition-colors shadow-sm flex items-center justify-center gap-2 mt-4" type="submit">
@@ -235,12 +236,13 @@
         <div class="space-y-1.5">
           <label class="font-label-sm text-label-sm text-on-surface-variant" for="edit-seleccion-bandera-url-input">Bandera</label>
           <div class="flex gap-2">
-            <input id="edit-seleccion-bandera-url-input" name="seleccion[bandera_url]" class="w-full h-12 bg-surface px-4 rounded-lg border border-outline outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md text-on-surface" placeholder="https://ejemplo.com/bandera.png" type="url" />
-            <button type="button" data-flag-search-target="edit" class="h-12 px-4 rounded-lg border border-outline text-primary-container hover:bg-surface-container-high transition-colors" title="Buscar bandera">
+            <input id="edit-seleccion-bandera-url-input" name="seleccion[bandera_url]" class="w-full h-12 bg-surface px-4 rounded-lg border border-outline outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md text-on-surface" placeholder="URL o imagen seleccionada desde tu equipo" type="text" />
+            <input id="edit-seleccion-bandera-archivo" type="file" accept="image/*" class="hidden" data-flag-file-input="edit">
+            <button type="button" data-flag-file-button="edit" class="h-12 px-4 rounded-lg border border-outline text-primary-container hover:bg-surface-container-high transition-colors" title="Buscar bandera en mi computadora">
               <span class="material-symbols-outlined">search</span>
             </button>
           </div>
-          <p class="text-xs text-on-surface-variant">Si queda vacio, se mostrara el acronimo.</p>
+          <p class="text-xs text-on-surface-variant">Puedes pegar una URL o elegir una imagen de tu equipo. Si queda vacio, se mostrara el acronimo.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="space-y-1.5">
@@ -302,12 +304,31 @@
     editSeleccionModal.classList.remove('hidden');
   }
 
-  document.querySelectorAll('[data-flag-search-target]').forEach(button => {
+  function cargarBanderaDesdeArchivo(target, file) {
+    if (!file) return;
+
+    const inputDestino = target === 'edit'
+      ? editSeleccionBanderaUrlInput
+      : document.getElementById('seleccion_bandera_url');
+
+    const reader = new FileReader();
+    reader.onload = event => {
+      inputDestino.value = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.querySelectorAll('[data-flag-file-button]').forEach(button => {
     button.addEventListener('click', () => {
-      const target = button.dataset.flagSearchTarget;
-      const nombre = target === 'edit' ? editSeleccionNombreInput.value : nuevaSeleccionNombreInput.value;
-      const termino = nombre && nombre.trim().length > 0 ? nombre.trim() : 'pais';
-      window.open(`https://www.google.com/search?tbm=isch&q=bandera ${encodeURIComponent(termino)}`, '_blank', 'noopener');
+      const target = button.dataset.flagFileButton;
+      const inputArchivo = document.querySelector(`[data-flag-file-input="${target}"]`);
+      inputArchivo?.click();
+    });
+  });
+
+  document.querySelectorAll('[data-flag-file-input]').forEach(input => {
+    input.addEventListener('change', () => {
+      cargarBanderaDesdeArchivo(input.dataset.flagFileInput, input.files[0]);
     });
   });
 </script>
