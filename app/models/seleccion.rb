@@ -237,9 +237,6 @@ class Seleccion < ApplicationRecord
   def calcular_diferencia_goles
     self.diferencia_goles = goles_favor - goles_contra
   end
-<<<<<<< HEAD
-end
-=======
 
   def capacidad_grupo
     return if grupo.blank?
@@ -247,4 +244,3 @@ end
     errors.add(:grupo, "ya tiene el máximo de 4 selecciones asignadas") if selecciones_en_grupo >= 4
   end
 end
->>>>>>> 00c38aef568b6fc388b6289a60aa6be89d165aef
