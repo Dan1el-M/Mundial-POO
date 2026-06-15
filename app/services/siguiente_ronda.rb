@@ -52,6 +52,15 @@ class SiguienteRonda
   def avanzar
     finalizar_partidos_con_marcador!
 
+    partidos_invalidos = partidos_con_penales_empatados
+    if partidos_invalidos.any?
+      numeros = partidos_invalidos.map { |partido| "##{partido.numero_partido}" }.join(", ")
+      return {
+        ok: false,
+        error: "No se puede avanzar. Corrige los penales empatados en: #{numeros}."
+      }
+    end
+
     resultado_cierre = cerrar_torneo_si_corresponde
     return resultado_cierre if resultado_cierre.present?
 
@@ -97,6 +106,7 @@ class SiguienteRonda
            .find_each do |partido|
       next if partido.empate? &&
               (partido.goles_penales_local.blank? || partido.goles_penales_visitante.blank?)
+      next if partido.empate? && partido.goles_penales_local == partido.goles_penales_visitante
 
       partido.registrar_resultado!(
         partido.goles_local,
@@ -104,6 +114,17 @@ class SiguienteRonda
         partido.goles_penales_local,
         partido.goles_penales_visitante
       )
+    end
+  end
+
+  def partidos_con_penales_empatados
+    Partido.eliminacion_directa.select do |partido|
+      partido.goles_local.present? &&
+        partido.goles_visitante.present? &&
+        partido.goles_local == partido.goles_visitante &&
+        partido.goles_penales_local.present? &&
+        partido.goles_penales_visitante.present? &&
+        partido.goles_penales_local == partido.goles_penales_visitante
     end
   end
 

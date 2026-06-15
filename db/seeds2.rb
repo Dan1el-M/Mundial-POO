@@ -1,10 +1,6 @@
-# seeds2.rb - Seeder de prueba con selecciones reales del Mundial 2026
-# Este archivo agrega selecciones a los grupos.
-# Úsalo con: bundle exec rails db:seed:replant[seeds2]
-# O manualmente: load 'db/seeds2.rb' (en rails console)
-
-# Selecciones reales del Mundial 2026 confirmadas por FIFA
-# 12 grupos × 4 equipos = 48 selecciones
+# seeds2.rb - Seeder de prueba con selecciones del Mundial 2026.
+# Este archivo agrega o actualiza selecciones y carga banderas por ruta relativa.
+# Úsalo con: load "db/seeds2.rb" desde rails console o runner.
 
 mundial_2026 = {
   "A" => {
@@ -21,54 +17,54 @@ mundial_2026 = {
   },
   "C" => {
     "FRA" => "Francia",
-    "MOR" => "Marruecos",
+    "MAR" => "Marruecos",
     "CRO" => "Croacia",
-    "ALE" => "Alemania"
+    "GER" => "Alemania"
   },
   "D" => {
     "ESP" => "España",
-    "HOL" => "Holanda",
+    "NED" => "Países Bajos",
     "CHI" => "Chile",
     "ITA" => "Italia"
   },
   "E" => {
     "BEL" => "Bélgica",
     "ROU" => "Rumania",
-    "ESK" => "Eslovaquia",
+    "SVK" => "Eslovaquia",
     "SRB" => "Serbia"
   },
   "F" => {
     "POR" => "Portugal",
     "TUR" => "Turquía",
-    "CHE" => "Chequia",
+    "CZE" => "Chequia",
     "GEO" => "Georgia"
   },
   "G" => {
     "ENG" => "Inglaterra",
-    "DIN" => "Dinamarca",
+    "DEN" => "Dinamarca",
     "SUI" => "Suiza",
-    "ESL" => "Eslovenia"
+    "SVN" => "Eslovenia"
   },
   "H" => {
     "KOR" => "Corea del Sur",
-    "TAI" => "Tailandia",
+    "THA" => "Tailandia",
     "VIE" => "Vietnam",
     "MAD" => "Madagascar"
   },
   "I" => {
-    "JAP" => "Japón",
+    "JPN" => "Japón",
     "IRN" => "Irán",
     "UZB" => "Uzbekistán",
     "AFG" => "Afganistán"
   },
   "J" => {
-    "SAU" => "Arabia Saudita",
+    "KSA" => "Arabia Saudita",
     "AUS" => "Australia",
     "IRQ" => "Irak",
-    "EAU" => "Emiratos Árabes Unidos"
+    "UAE" => "Emiratos Árabes Unidos"
   },
   "K" => {
-    "CAM" => "Camerún",
+    "CMR" => "Camerún",
     "GHA" => "Ghana",
     "CIV" => "Costa de Marfil",
     "CGO" => "Congo"
@@ -76,49 +72,74 @@ mundial_2026 = {
   "L" => {
     "RSA" => "Sudáfrica",
     "NGA" => "Nigeria",
-    "AGO" => "Angola",
-    "GUM" => "Guinea"
+    "ANG" => "Angola",
+    "GUI" => "Guinea"
   }
 }.freeze
 
-puts "\n" + "="*70
-puts "🏆 AGREGANDO SELECCIONES DEL MUNDIAL 2026"
-puts "="*70 + "\n"
+def ruta_bandera(acronimo)
+  ruta_relativa = "flags/#{acronimo}.png"
+  Rails.root.join(ruta_relativa).exist? ? ruta_relativa : nil
+end
+
+puts "\n" + ("=" * 70)
+puts "AGREGANDO O ACTUALIZANDO SELECCIONES DEL MUNDIAL 2026"
+puts "=" * 70
 
 contador = 0
 
 mundial_2026.each do |letra_grupo, equipos|
   grupo = Grupo.find_by(letra: letra_grupo)
-  
+
   unless grupo
-    puts "❌ Grupo #{letra_grupo} no existe. Asegúrate de ejecutar seeds.rb primero"
+    puts "Grupo #{letra_grupo} no existe. Ejecuta seeds.rb primero."
     next
   end
 
-  puts "📍 Grupo #{letra_grupo}:"
-  
+  puts "Grupo #{letra_grupo}:"
+
   equipos.each do |acronimo, nombre|
-    seleccion = Seleccion.create!(
-      nombre: nombre,
-      acronimo: acronimo,
-      grupo: grupo,
-      puntos: 0,
-      goles_favor: 0,
-      goles_contra: 0,
-      diferencia_goles: 0
-    )
-    
-    puts "   ✅ #{acronimo} - #{nombre}"
+    seleccion = Seleccion.find_by(acronimo: acronimo) ||
+                Seleccion.find_by(nombre: nombre) ||
+                Seleccion.new
+    era_nueva = seleccion.new_record?
+
+    if era_nueva && grupo.selecciones.count >= Grupo::MAXIMO_EQUIPOS
+      puts "  Omitida: #{acronimo} - #{nombre} (Grupo #{letra_grupo} ya esta lleno)"
+      next
+    end
+
+    if era_nueva
+      seleccion.assign_attributes(
+        nombre: nombre,
+        acronimo: acronimo,
+        grupo: grupo,
+        bandera_url: ruta_bandera(acronimo),
+        puntos: 0,
+        goles_favor: 0,
+        goles_contra: 0,
+        diferencia_goles: 0
+      )
+    else
+      seleccion.assign_attributes(
+        nombre: nombre,
+        grupo: grupo,
+        bandera_url: ruta_bandera(seleccion.acronimo)
+      )
+    end
+
+    seleccion.save!
+
+    estado = era_nueva ? "Agregada" : "Actualizada"
+    bandera = seleccion.bandera_url.present? ? seleccion.bandera_url : "sin bandera"
+    puts "  #{estado}: #{acronimo} - #{nombre} (#{bandera})"
     contador += 1
   end
-  
+
   puts ""
 end
 
-puts "="*70
-puts "✨ COMPLETADO"
-puts "📊 Se agregaron #{contador} selecciones en #{mundial_2026.length} grupos"
-puts "="*70 + "\n"
-
-# Para borrar todos los datos de selecciones:
-# DELETE FROM selecciones; DELETE FROM grupos; bundle exec rails db:seed
+puts "=" * 70
+puts "COMPLETADO"
+puts "Se agregaron o actualizaron #{contador} selecciones en #{mundial_2026.length} grupos"
+puts "=" * 70

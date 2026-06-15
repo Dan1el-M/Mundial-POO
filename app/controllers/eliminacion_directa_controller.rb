@@ -137,6 +137,7 @@ class EliminacionDirectaController < ApplicationController
     @etapas_etiquetas = ETAPAS_DE_ELIMINACION
     @partidos_por_etapa = build_partidos_por_etapa
     @resultados_disponibles = resultados_finales_disponibles?
+    @partidos_penales_empatados = partidos_con_penales_empatados
 
     if @fase_grupos_completa && @partidos_por_etapa[:dieciseisavos].empty? && @clasificados_count == 32
       generar_dieciseisavos_iniciales
@@ -149,6 +150,8 @@ class EliminacionDirectaController < ApplicationController
       @partidos_por_etapa = build_partidos_por_etapa
       @resultados_disponibles = resultados_finales_disponibles?
     end
+
+    @partidos_penales_empatados = partidos_con_penales_empatados
 
     if @torneo.podio_listo? && !@torneo.finalizado?
       @torneo.determinar_podio!
@@ -167,17 +170,11 @@ class EliminacionDirectaController < ApplicationController
   def actualizar_resultados
     @torneo = Torneo.actual
     resultados = params.fetch(:resultados, {}).permit!
-    guardados = 0
     errores = []
 
     resultados.each do |partido_id, partido_params|
       partido = Partido.find_by(id: partido_id)
       next unless partido&.eliminacion_directa?
-
-      if partido.finalizado?
-        errores << "Partido #{partido.numero_partido}: ya finalizado, no se puede editar."
-        next
-      end
 
       goles_local_value = partido_params[:goles_local]
       goles_visitante_value = partido_params[:goles_visitante]
@@ -196,6 +193,11 @@ class EliminacionDirectaController < ApplicationController
           errores << "Partido #{partido.numero_partido}: empate, complete penales."
           next
         end
+
+        if penales_local.to_i == penales_visitante.to_i
+          errores << "Partido #{partido.numero_partido}: los penales no pueden quedar empatados."
+          next
+        end
       else
         penales_local = nil
         penales_visitante = nil
@@ -208,15 +210,12 @@ class EliminacionDirectaController < ApplicationController
           penales_local&.to_i,
           penales_visitante&.to_i
         )
-        guardados += 1
       rescue StandardError => e
         errores << "Partido #{partido.numero_partido}: #{e.message}"
       end
     end
-
-    mensaje = "#{guardados} resultados guardados."
     if errores.any?
-      mensaje += " Errores: #{errores.join(' ')}"
+      mensaje = " Errores: #{errores.join(' ')}"
       redirect_to fase_eliminatoria_path, alert: mensaje
       return
     end
@@ -240,8 +239,8 @@ class EliminacionDirectaController < ApplicationController
     octavos: "Octavos",
     cuartos: "Cuartos de Final",
     semifinal: "Semifinal",
-    final: "Final",
-    tercer_lugar: "Tercer Lugar"
+    tercer_lugar: "Tercer Lugar",
+    final: "Final"
   }.freeze
 
   def build_partidos_por_etapa
@@ -257,6 +256,17 @@ class EliminacionDirectaController < ApplicationController
     partidos = Partido.eliminacion_directa
 
     partidos.count == 32 && partidos.where.not(estado: "finalizado").none?
+  end
+
+  def partidos_con_penales_empatados
+    Partido.eliminacion_directa.order(:numero_partido).select do |partido|
+      partido.goles_local.present? &&
+        partido.goles_visitante.present? &&
+        partido.goles_local == partido.goles_visitante &&
+        partido.goles_penales_local.present? &&
+        partido.goles_penales_visitante.present? &&
+        partido.goles_penales_local == partido.goles_penales_visitante
+    end
   end
 
   def generar_dieciseisavos_iniciales
