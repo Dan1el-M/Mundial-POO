@@ -82,11 +82,12 @@
                   <span class="font-headline-md text-primary"><%= partido.seleccion_local.nombre %></span>
                 </div>
                 <%= form.number_field :goles_local,
-                                      min: 0,
-                                      required: true,
-                                      value: partido.goles_local,
-                                      placeholder: "-",
-                                      class: "w-20 text-center text-3xl font-black bg-surface-container border-2 border-primary rounded-xl p-2 focus:ring-2 focus:ring-secondary focus:outline-none" %>
+                      min: 0,
+                      required: true,
+                      value: partido.goles_local,
+                      placeholder: "-",
+                      disabled: finalizado,
+                      class: "w-20 text-center text-3xl font-black bg-surface-container border-2 border-primary rounded-xl p-2 focus:ring-2 focus:ring-secondary focus:outline-none #{'opacity-50 cursor-not-allowed' if finalizado}" %>
               </div>
 
               <div class="text-center">
@@ -98,12 +99,13 @@
                   <%= bandera_seleccion(partido.seleccion_visitante, wrapper_class: "w-24 h-16 rounded border border-outline-variant", text_class: "text-xl") %>
                   <span class="font-headline-md text-primary"><%= partido.seleccion_visitante.nombre %></span>
                 </div>
-                <%= form.number_field :goles_visitante,
-                                      min: 0,
-                                      required: true,
-                                      value: partido.goles_visitante,
-                                      placeholder: "-",
-                                      class: "w-20 text-center text-3xl font-black bg-surface-container border-2 border-primary rounded-xl p-2 focus:ring-2 focus:ring-secondary focus:outline-none" %>
+                <%= form.number_field :goles_local,
+                      min: 0,
+                      required: true,
+                      value: partido.goles_visitante,
+                      placeholder: "-",
+                      disabled: finalizado,
+                      class: "w-20 text-center text-3xl font-black bg-surface-container border-2 border-primary rounded-xl p-2 focus:ring-2 focus:ring-secondary focus:outline-none #{'opacity-50 cursor-not-allowed' if finalizado}" %>
               </div>
             </div>
 
@@ -112,9 +114,12 @@
                 <span class="material-symbols-outlined"><%= finalizado ? 'verified' : 'schedule' %></span>
                 <%= finalizado ? 'Resultado registrado' : 'Pendiente de resultado' %>
               </span>
-              <button type="submit" class="bg-primary text-on-primary px-6 py-2 rounded-full font-bold hover:scale-105 transition-transform flex items-center justify-center gap-2">
+              <button
+                type="submit"
+                <%= "disabled" if finalizado %>
+                class="bg-primary text-on-primary px-6 py-2 rounded-full font-bold flex items-center justify-center gap-2 transition-transform <%= finalizado ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105' %>">
                 <span class="material-symbols-outlined">save</span>
-                Guardar marcador
+                <%= finalizado ? "Resultado ya registrado" : "Guardar marcador" %>
               </button>
             </div>
           <% end %>
