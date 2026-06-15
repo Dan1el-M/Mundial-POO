@@ -1,0 +1,85 @@
+<div class="space-y-gutter custom-scrollbar">
+  <header class="mb-section-margin flex flex-col md:flex-row md:items-end justify-between gap-gutter">
+    <div>
+      <h1 class="font-headline-lg text-headline-lg text-primary mb-2">Validación de Fase Eliminatoria</h1>
+      <p class="text-on-surface-variant font-body-lg">Estado de Clasificación - Fase de Grupos</p>
+    </div>
+  </header>
+
+  <% unless @fase_grupos_completa %>
+    <div class="bg-error-container text-on-error-container p-6 rounded-xl flex items-start gap-4 border border-error/20">
+      <span class="material-symbols-outlined text-3xl" data-icon="warning">warning</span>
+      <div>
+        <h4 class="font-bold text-lg mb-1">Acceso Restringido: Partidos Pendientes</h4>
+        <p class="opacity-90">La fase de grupos aún no ha concluido. Deben registrarse todos los resultados (72 partidos) para habilitar el cuadro de eliminación directa.</p>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="glass-card p-6 rounded-xl">
+    <h3 class="font-headline-md text-primary mb-6">Estado de Grupos (A-L)</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <% @grupos_info.each do |letra, info| %>
+        <div class="p-4 rounded-lg <%= info[:status] == 'Finalizado' ? 'bg-surface-container-highest border-l-4 border-l-primary' : 'bg-surface-container-low border-l-4 border-l-outline-variant opacity-70' %>">
+          <span class="block font-bold">Grupo <%= letra %></span>
+          <span class="text-xs <%= info[:status] == 'Finalizado' ? 'text-primary font-medium' : 'text-on-surface-variant' %>"><%= info[:status] %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="glass-card p-12 rounded-xl flex flex-col items-center justify-center text-center <%= @fase_grupos_completa ? '' : 'opacity-50' %> border-dashed border-2 border-outline-variant">
+    <span class="material-symbols-outlined text-6xl mb-4" data-icon="lock">lock</span>
+    <h4 class="font-headline-md mb-2">Cuadro de Eliminación Directa</h4>
+    <p class="mb-8 max-w-md">El bracket se generará automáticamente una vez que se validen los 72 encuentros de la fase inicial.</p>
+    <% if @fase_grupos_completa %>
+      <%= link_to fase_eliminatoria_path, class: 'bg-[#001B4D] text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2' do %>
+        <span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+        Generar Fase Eliminatoria
+      <% end %>
+    <% else %>
+      <button class="bg-outline text-on-surface-variant px-8 py-3 rounded-xl font-bold cursor-not-allowed flex items-center gap-2" disabled>
+        <span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+        Generar Fase Eliminatoria
+      </button>
+    <% end %>
+  </div>
+
+  <div class="fixed bottom-8 right-8 bg-on-tertiary-fixed-variant text-on-tertiary px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4 translate-y-24 opacity-0 transition-all duration-300 z-[100]" id="toast">
+    <span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+    <div>
+      <p class="font-bold">Resultado Guardado</p>
+      <p class="text-sm opacity-90">La tabla de grupos se ha actualizado correctamente.</p>
+    </div>
+  </div>
+
+  <script>
+    function simulateSave(button) {
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<span class="material-symbols-outlined animate-spin" data-icon="progress_activity">progress_activity</span> Guardando...';
+        button.disabled = true;
+        button.classList.add('opacity-70');
+
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.disabled = false;
+            button.classList.remove('opacity-70');
+
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-y-24', 'opacity-0');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+
+            const table = document.querySelector('table tbody');
+            if (table) {
+              table.classList.add('bg-secondary-container/20');
+              setTimeout(() => {
+                  table.classList.remove('bg-secondary-container/20');
+              }, 500);
+            }
+        }, 1000);
+    }
+  </script>
+</div>

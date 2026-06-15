@@ -11,7 +11,7 @@
 
 class EliminacionDirectaController < ApplicationController
   before_action :set_etapa, only: [:show]
-  before_action :verificar_fase_grupos_completa, only: [:index, :show]
+  before_action :verificar_fase_grupos_completa, only: [:show, :fase_eliminatoria]
 
   # ──────────────────────────────────────────
   # GET /eliminacion-directa
@@ -48,6 +48,25 @@ class EliminacionDirectaController < ApplicationController
     @partidos_finalizados = Partido.eliminacion_directa.finalizados.count
     @progreso = @total_partidos.zero? ? 0 : 
                 (@partidos_finalizados.to_f / @total_partidos * 100).round(1)
+
+    @fase_grupos_completa = DeterminarClasificados.new.fase_grupos_completa?
+    @partidos_fase_grupos = Partido.fase_grupos
+    @partidos_fase_grupos_totales = @partidos_fase_grupos.count
+    @partidos_fase_grupos_finalizados = @partidos_fase_grupos.finalizados.count
+    @progreso_fase_grupos = @partidos_fase_grupos_totales.zero? ? 0 :
+                            (@partidos_fase_grupos_finalizados.to_f / @partidos_fase_grupos_totales * 100).round(1)
+
+    @grupos_info = Grupo.ordenados.each_with_object({}) do |grupo, hash|
+      partidos = grupo.partidos.fase_grupos
+      finalizados = partidos.finalizados.count
+      completado = partidos.count == 6 && finalizados == 6
+
+      hash[grupo.letra] = {
+        status: completado ? "Finalizado" : "Pendiente"
+      }
+    end
+
+    render template: "fase_de_grupos/validacion_fase_eliminatoria"
   end
 
   # ──────────────────────────────────────────
@@ -109,7 +128,164 @@ class EliminacionDirectaController < ApplicationController
     end
   end
 
+  # Pantalla de visualización de la fase eliminatoria (llaves)
+  def fase_eliminatoria
+    @torneo = Torneo.actual
+    @clasificados = DeterminarClasificados.obtener
+    @fase_grupos_completa = @torneo.fase_grupos_lista?
+    @clasificados_count = @clasificados[:total_clasificados].count
+    @etapas_etiquetas = ETAPAS_DE_ELIMINACION
+    @partidos_por_etapa = build_partidos_por_etapa
+
+    if @fase_grupos_completa && @partidos_por_etapa[:dieciseisavos].empty? && @clasificados_count == 32
+      generar_dieciseisavos_iniciales
+      flash.now[:notice] = "Se generaron los partidos de Dieciseisavos automáticamente."
+      @partidos_por_etapa = build_partidos_por_etapa
+    end
+
+    if @fase_grupos_completa && @partidos_por_etapa[:dieciseisavos].any?
+      generar_siguiente_ronda_automatico
+      @partidos_por_etapa = build_partidos_por_etapa
+    end
+
+    render template: "fase_de_grupos/fase_eliminatoria"
+  end
+
+  def actualizar_resultados
+    @torneo = Torneo.actual
+    resultados = params.fetch(:resultados, {}).permit!
+    guardados = 0
+    errores = []
+
+    resultados.each do |partido_id, partido_params|
+      partido = Partido.find_by(id: partido_id)
+      next unless partido&.eliminacion_directa?
+
+      goles_local_value = partido_params[:goles_local]
+      goles_visitante_value = partido_params[:goles_visitante]
+      goles_local = goles_local_value.present? ? goles_local_value.to_i : nil
+      goles_visitante = goles_visitante_value.present? ? goles_visitante_value.to_i : nil
+      penales_local = partido_params[:goles_penales_local].presence
+      penales_visitante = partido_params[:goles_penales_visitante].presence
+
+      if goles_local.nil? || goles_visitante.nil?
+        errores << "Partido #{partido.numero_partido}: complete ambos goles."
+        next
+      end
+
+      if goles_local == goles_visitante
+        if penales_local.blank? || penales_visitante.blank?
+          errores << "Partido #{partido.numero_partido}: empate, complete penales."
+          next
+        end
+      end
+
+      begin
+        partido.registrar_resultado!(
+          goles_local,
+          goles_visitante,
+          penales_local&.to_i,
+          penales_visitante&.to_i
+        )
+        guardados += 1
+      rescue StandardError => e
+        errores << "Partido #{partido.numero_partido}: #{e.message}"
+      end
+    end
+
+    mensaje = "#{guardados} resultados guardados."
+    if errores.any?
+      mensaje += " Errores: #{errores.join(' ')}"
+      redirect_to fase_eliminatoria_path, alert: mensaje
+      return
+    end
+
+    avance = SiguienteRonda.new(@torneo).avanzar
+    if avance[:ok]
+      mensaje += " Partidos de #{avance[:etapa].humanize} generados automáticamente."
+      redirect_to fase_eliminatoria_path, notice: mensaje
+    else
+      mensaje += " #{avance[:error]}"
+      redirect_to fase_eliminatoria_path, notice: mensaje
+    end
+  end
+
+  helper_method :partido_estado_label, :partido_estado_class, :partido_score_text
+
   private
+
+  ETAPAS_DE_ELIMINACION = {
+    dieciseisavos: "Dieciseisavos",
+    octavos: "Octavos",
+    cuartos: "Cuartos de Final",
+    semifinal: "Semifinal",
+    final: "Final",
+    tercer_lugar: "Tercer Lugar"
+  }.freeze
+
+  def build_partidos_por_etapa
+    ETAPAS_DE_ELIMINACION.each_with_object({}) do |(etapa, _label), hash|
+      rango = SiguienteRonda::RANGOS[etapa.to_s]
+      hash[etapa] = Partido.eliminacion_directa
+                         .where(numero_partido: rango)
+                         .order(:numero_partido)
+    end
+  end
+
+  def generar_dieciseisavos_iniciales
+    seleccionadas = @clasificados[:total_clasificados]
+    return if seleccionadas.size != 32
+
+    seleccionadas.each_slice(2).with_index do |(local, visitante), index|
+      numero_partido = 73 + index
+      partido = Partido.find_or_initialize_by(
+        numero_partido: numero_partido,
+        tipo_partido: "eliminacion_directa",
+        torneo_id: @torneo.id
+      )
+
+      partido.assign_attributes(
+        estado: "programado",
+        seleccion_local: local,
+        seleccion_visitante: visitante,
+        ganador: nil,
+        goles_local: nil,
+        goles_visitante: nil,
+        goles_penales_local: nil,
+        goles_penales_visitante: nil
+      )
+      partido.save! if partido.changed?
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.error("Error generando dieciseisavos: #{e.message}")
+  end
+
+  def generar_siguiente_ronda_automatico
+    servicio = SiguienteRonda.new(@torneo)
+    resultado = servicio.avanzar
+
+    return unless resultado[:ok]
+
+    flash.now[:notice] ||= ""
+    flash.now[:notice] += " " unless flash.now[:notice].blank?
+    flash.now[:notice] += "Partidos de #{resultado[:etapa].humanize} generados automáticamente."
+  end
+
+  def partido_estado_label(partido)
+    case partido.estado
+    when "finalizado" then "FINALIZADO"
+    when "en_juego" then "EN VIVO"
+    else "PROGRAMADO"
+    end
+  end
+
+  def partido_estado_class(partido)
+    case partido.estado
+    when "finalizado" then "bg-green-500"
+    when "en_juego" then "bg-yellow-400"
+    else "bg-outline-variant"
+    end
+  end
 
   # ──────────────────────────────────────────
   # Callbacks privados

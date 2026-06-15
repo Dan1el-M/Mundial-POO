@@ -120,15 +120,19 @@
       .brand-text {
           letter-spacing: -0.02em;
       }
-      /* Custom scrollbar for data density */
-      ::-webkit-scrollbar {
-          width: 6px;
+      .glass-card {
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(8px);
+          border: 1px solid #DEE2E6;
       }
-      ::-webkit-scrollbar-track {
+      .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
           background: #f1f1f1;
       }
-      ::-webkit-scrollbar-thumb {
-          background: #c5c6d0;
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #001B4D;
           border-radius: 10px;
       }
     </style>
@@ -307,10 +311,10 @@
           <span class="material-symbols-outlined">calendar_month</span>
           <span class="font-label-sm text-label-sm">Calendario y Partidos</span>
         <% end %>
-        <a class="flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all" href="#">
+        <%= link_to validacion_fase_eliminatoria_path, class: 'flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all' do %>
           <span class="material-symbols-outlined">account_tree</span>
           <span class="font-label-sm text-label-sm">Fase Eliminatoria</span>
-        </a>
+        <% end %>
         <a class="flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all" href="#">
           <span class="material-symbols-outlined">leaderboard</span>
           <span class="font-label-sm text-label-sm">Estadísticas</span>

@@ -1,0 +1,95 @@
+<%= form_with url: actualizar_resultados_fase_eliminatoria_path, method: :patch, local: true, class: 'flex flex-col gap-6' do %>
+  <!-- Header Section -->
+  <header class="flex justify-between items-center mb-8 px-container-padding pt-base">
+    <div>
+      <h2 class="font-headline-lg text-headline-lg text-primary uppercase tracking-tight">Fase Eliminatoria</h2>
+      <p class="text-body-lg text-outline">Gestión global de llaves y avance automático del torneo</p>
+    </div>
+    <button type="submit" class="bg-[#001B4D] text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-primary transition-all shadow-md active:scale-95">
+      <span class="material-symbols-outlined">auto_mode</span>
+      Avanzar de Fase Automáticamente
+    </button>
+  </header>
+
+  <!-- Bracket Canvas -->
+  <div class="relative custom-scrollbar overflow-x-auto pb-12 px-container-padding">
+  <div class="inline-flex gap-16 min-w-max py-8">
+    <% @etapas_etiquetas.each do |etapa, etiqueta| %>
+      <section class="flex flex-col gap-8 w-64">
+        <h3 class="text-center font-bold text-outline-variant text-label-sm uppercase tracking-widest border-b border-outline-variant pb-2 mb-4"><%= etiqueta %></h3>
+        <div class="space-y-12">
+          <% partidos = @partidos_por_etapa[etapa] || [] %>
+          <% if partidos.any? %>
+            <% partidos.each do |partido| %>
+              <% estado_class = partido_estado_class(partido) %>
+              <div class="match-node <%= partido.finalizado? ? 'connector-down active-connector' : 'connector-up' %>">
+                <div class="bg-white border border-outline-variant rounded-xl shadow-sm overflow-hidden w-full">
+                  <div class="flex justify-between items-center p-3 border-b border-surface-container-highest <%= partido.finalizado? ? 'bg-secondary-container/10' : '' %>">
+                    <div class="flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full <%= estado_class %>"></span>
+                      <span class="text-[10px] font-bold text-primary"><%= partido_estado_label(partido) %></span>
+                    </div>
+                    <span class="text-[10px] text-outline font-bold">M<%= partido.numero_partido %></span>
+                  </div>
+                  <div class="p-3 space-y-4">
+                    <div class="grid grid-cols-12 gap-3 items-center">
+                      <div class="col-span-5 flex items-center gap-2 text-primary font-bold">
+                        <span class="w-6 h-4 bg-blue-700 rounded-sm"></span>
+                        <span><%= partido.seleccion_local.acronimo %></span>
+                      </div>
+                      <div class="col-span-2 text-center text-sm text-outline-variant">vs</div>
+                      <div class="col-span-5 flex items-center justify-end gap-2 text-red-600 font-bold">
+                        <span><%= partido.seleccion_visitante.acronimo %></span>
+                        <span class="w-6 h-4 rounded-sm bg-red-600"></span>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                      <div class="space-y-1">
+                        <label class="block text-[11px] uppercase tracking-[.18em] text-outline-variant" for="resultados_<%= partido.id %>_goles_local">Goles Local</label>
+                        <input type="number" name="resultados[<%= partido.id %>][goles_local]" id="resultados_<%= partido.id %>_goles_local" min="0" class="w-full rounded-lg border border-outline-variant px-3 py-2" value="<%= partido.goles_local %>" />
+                      </div>
+                      <div class="space-y-1">
+                        <label class="block text-[11px] uppercase tracking-[.18em] text-outline-variant" for="resultados_<%= partido.id %>_goles_visitante">Goles Visitante</label>
+                        <input type="number" name="resultados[<%= partido.id %>][goles_visitante]" id="resultados_<%= partido.id %>_goles_visitante" min="0" class="w-full rounded-lg border border-outline-variant px-3 py-2" value="<%= partido.goles_visitante %>" />
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                      <div class="space-y-1">
+                        <label class="block text-[11px] uppercase tracking-[.18em] text-outline-variant" for="resultados_<%= partido.id %>_goles_penales_local">Penales Local</label>
+                        <input type="number" name="resultados[<%= partido.id %>][goles_penales_local]" id="resultados_<%= partido.id %>_goles_penales_local" min="0" class="w-full rounded-lg border border-outline-variant px-3 py-2" value="<%= partido.goles_penales_local %>" />
+                      </div>
+                      <div class="space-y-1">
+                        <label class="block text-[11px] uppercase tracking-[.18em] text-outline-variant" for="resultados_<%= partido.id %>_goles_penales_visitante">Penales Visitante</label>
+                        <input type="number" name="resultados[<%= partido.id %>][goles_penales_visitante]" id="resultados_<%= partido.id %>_goles_penales_visitante" min="0" class="w-full rounded-lg border border-outline-variant px-3 py-2" value="<%= partido.goles_penales_visitante %>" />
+                      </div>
+                    </div>
+                    <% if partido.finalizado? && partido.goles_penales_local.present? %>
+                      <div class="text-xs text-on-surface-variant">Penales: <%= partido.goles_penales_local %> - <%= partido.goles_penales_visitante %></div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="bg-surface-container-low border border-dashed border-outline-variant rounded-xl w-full h-32 flex flex-col items-center justify-center text-outline-variant">
+              <span class="material-symbols-outlined text-4xl mb-2">pending</span>
+              <span class="text-label-sm">No hay partidos generados para esta etapa.</span>
+            </div>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  </div>
+</div>
+<% end %>
+<script>
+  document.querySelectorAll('.match-node').forEach(node => {
+    node.addEventListener('mouseenter', () => {
+      node.style.transform = 'scale(1.02)';
+      node.style.transition = 'transform 0.2s ease-out';
+    });
+    node.addEventListener('mouseleave', () => {
+      node.style.transform = 'scale(1)';
+    });
+  });
+</script>
