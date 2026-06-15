@@ -22,7 +22,7 @@ class Grupo < ApplicationRecord
             inverse_of: :grupo
 
   has_many :partidos,
-            -> { where(tipo_partido: nil).order(:id) },
+            -> { where(tipo_partido: "fase_grupos").order(:numero_partido) },
             dependent: :destroy
 
   # ──────────────────────────────────────────
