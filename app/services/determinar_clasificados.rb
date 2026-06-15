@@ -53,10 +53,10 @@ class DeterminarClasificados
   end
 
   # Verifica si la fase de grupos está completa
-  # (todos los grupos tienen 4 equipos con estadísticas)
+  # Requiere todos los grupos con 4 equipos y los 72 partidos de fase de grupos finalizados.
   def fase_grupos_completa?
     grupos = Grupo.all
-    grupos.all?(&:completo?) && partidos_fase_grupos_finalizados?
+    grupos.all?(&:completo?) && all_partidos_fase_grupos_finalizados?
   end
 
   # Retorna el número de partidos finalizados de fase de grupos
@@ -67,6 +67,12 @@ class DeterminarClasificados
   # Total de partidos esperados en fase de grupos (12 grupos × 6 partidos/grupo)
   def total_partidos_fase_grupos
     12 * 6  # Cada grupo: 4 equipos × 3 partidos por equipo ÷ 2 = 6 partidos
+  end
+
+  # Verifica que existan los 72 partidos de fase de grupos y todos estén finalizados
+  def all_partidos_fase_grupos_finalizados?
+    partidos_fase_grupos_finalizados == total_partidos_fase_grupos &&
+      Partido.fase_grupos.count == total_partidos_fase_grupos
   end
 
   # Progreso de la fase de grupos (0.0 a 1.0)
