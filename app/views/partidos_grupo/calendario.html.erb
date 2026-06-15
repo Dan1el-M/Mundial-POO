@@ -60,8 +60,6 @@
     <% if @partidos.any? %>
       <% @partidos.each do |partido| %>
         <% finalizado = partido.finalizado? %>
-        <% local_codigo = partido.seleccion_local.acronimo.presence || partido.seleccion_local.nombre.first(3).upcase %>
-        <% visitante_codigo = partido.seleccion_visitante.acronimo.presence || partido.seleccion_visitante.nombre.first(3).upcase %>
 
         <article class="bg-white rounded-xl p-6 border-l-4 <%= finalizado ? 'border-l-primary bg-surface-container-low' : 'border-l-outline-variant' %> border border-outline-variant shadow-sm">
           <div class="flex justify-between items-start mb-6">
@@ -80,9 +78,7 @@
             <div class="grid grid-cols-3 items-center gap-4">
               <div class="text-center">
                 <div class="flex flex-col items-center gap-2 mb-2">
-                  <div class="w-16 h-12 bg-surface-container-highest rounded border border-outline-variant flex items-center justify-center font-black text-xl">
-                    <%= local_codigo.upcase %>
-                  </div>
+                  <%= bandera_seleccion(partido.seleccion_local, wrapper_class: "w-24 h-16 rounded border border-outline-variant", text_class: "text-xl") %>
                   <span class="font-headline-md text-primary"><%= partido.seleccion_local.nombre %></span>
                 </div>
                 <%= form.number_field :goles_local,
@@ -99,9 +95,7 @@
 
               <div class="text-center">
                 <div class="flex flex-col items-center gap-2 mb-2">
-                  <div class="w-16 h-12 bg-surface-container-highest rounded border border-outline-variant flex items-center justify-center font-black text-xl">
-                    <%= visitante_codigo.upcase %>
-                  </div>
+                  <%= bandera_seleccion(partido.seleccion_visitante, wrapper_class: "w-24 h-16 rounded border border-outline-variant", text_class: "text-xl") %>
                   <span class="font-headline-md text-primary"><%= partido.seleccion_visitante.nombre %></span>
                 </div>
                 <%= form.number_field :goles_visitante,
@@ -158,6 +152,8 @@
               <tr>
                 <th class="py-2 px-3 first:rounded-tl-lg">Selección</th>
                 <th class="py-2 px-1 text-center">PJ</th>
+                <th class="py-2 px-1 text-center">GF</th>
+                <th class="py-2 px-1 text-center">GC</th>
                 <th class="py-2 px-1 text-center">DG</th>
                 <th class="py-2 px-3 last:rounded-tr-lg text-center">PTS</th>
               </tr>
@@ -176,6 +172,8 @@
                 <tr class="hover:bg-surface-container transition-colors">
                   <td class="py-3 px-3 font-bold <%= borde_clasificacion %>"><%= seleccion.nombre %></td>
                   <td class="py-3 px-1 text-center"><%= seleccion.partidos_finalizados.fase_grupos.count %></td>
+                  <td class="py-3 px-1 text-center"><%= seleccion.goles_favor %></td>
+                  <td class="py-3 px-1 text-center"><%= seleccion.goles_contra %></td>
                   <td class="py-3 px-1 text-center"><%= seleccion.diferencia_goles.positive? ? "+#{seleccion.diferencia_goles}" : seleccion.diferencia_goles %></td>
                   <td class="py-3 px-3 text-center font-black text-primary"><%= seleccion.puntos %></td>
                 </tr>

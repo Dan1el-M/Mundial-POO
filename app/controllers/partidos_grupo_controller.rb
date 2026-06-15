@@ -126,19 +126,44 @@ class PartidosGrupoController < ApplicationController
     end
   end
 
-  def generar_partidos_faltantes(grupos)
+def generar_partidos_faltantes(grupos)
     grupos_ordenados = grupos.sort_by(&:letra)
 
+    # Orden de los partidos para un grupo de cuatro selecciones
+    emparejamientos = [
+    [0, 1], # A1 vs A2
+    [2, 3], # A3 vs A4
+    [0, 2], # A1 vs A3
+    [1, 3], # A2 vs A4
+    [0, 3], # A1 vs A4
+    [1, 2]  # A2 vs A3
+    ]
+
     grupos_ordenados.sum do |grupo|
-      selecciones = grupo.selecciones.to_a
+      # Debes establecer un orden fijo para saber cuál es A1, A2, A3 y A4
+      selecciones = grupo.selecciones.order(:id).to_a
       indice_grupo = Grupo::LETRAS.index(grupo.letra)
 
-      selecciones.combination(2).each_with_index.count do |(local, visitante), indice_partido_grupo|
-        numero_partido = numero_partido_fase_grupos(indice_grupo, indice_partido_grupo)
-        partido_existente = partido_por_emparejamiento(grupo, local, visitante)
+      emparejamientos.each_with_index.count do |(indice_local, indice_visitante), indice_partido_grupo|
+        local = selecciones[indice_local]
+        visitante = selecciones[indice_visitante]
+
+        numero_partido = numero_partido_fase_grupos(
+          indice_grupo,
+          indice_partido_grupo
+        )
+
+        partido_existente = partido_por_emparejamiento(
+          grupo,
+          local,
+          visitante
+        )
 
         if partido_existente
-          partido_existente.update!(numero_partido: numero_partido) if partido_existente.numero_partido != numero_partido
+          if partido_existente.numero_partido != numero_partido
+            partido_existente.update!(numero_partido: numero_partido)
+          end
+
           false
         else
           Partido.create!(
@@ -148,6 +173,7 @@ class PartidosGrupoController < ApplicationController
             seleccion_local: local,
             seleccion_visitante: visitante
           )
+
           true
         end
       end

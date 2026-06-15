@@ -61,7 +61,7 @@ class Seleccion < ApplicationRecord
   # (puntos → diferencia de goles → goles a favor)
   scope :tabla_de_grupo, ->(grupo_id) {
     where(grupo_id: grupo_id)
-      .order(puntos: :desc, diferencia_goles: :desc, goles_favor: :desc)
+      .order(puntos: :desc, diferencia_goles: :desc, goles_favor: :desc, id: :asc)
   }
 
   #scope :clasificados, -> { joins(:grupo).where(grupos: { clasificado: true }) }
@@ -181,7 +181,7 @@ class Seleccion < ApplicationRecord
   def self.mejores_terceros(cantidad = 8)
     Grupo.all.map { |g| tabla_de_grupo(g.id).offset(2).first }
          .compact
-         .sort_by { |s| [-s.puntos, -s.diferencia_goles, -s.goles_favor] }
+         .sort_by { |s| [-s.puntos, -s.diferencia_goles, -s.goles_favor, s.id] }
          .first(cantidad)
   end
 

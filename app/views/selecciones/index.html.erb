@@ -1,5 +1,5 @@
 <header class="mb-section-margin">
-  <h1 class="font-headline-lg text-headline-lg text-primary-container">Gestion de Selecciones y Grupos</h1>
+  <h1 class="font-headline-lg text-headline-lg text-primary-container">Gestion de Grupos y Selecciones</h1>
   <p class="font-body-md text-body-md text-on-surface-variant mt-2">Configura los participantes y la estructura competitiva del torneo mundial.</p>
 </header>
 
@@ -99,8 +99,9 @@
               <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider">Seleccion</th>
               <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider">Grupo</th>
               <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider text-center">Pts</th>
-              <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider text-center">GF/GC</th>
-              <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider">Estatus</th>
+              <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider text-center">GF</th>
+              <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider text-center">GC</th>
+              <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider text-center">DG</th>
               <th class="px-6 py-4 font-headline-md text-label-sm uppercase tracking-wider text-right">Acciones</th>
             </tr>
           </thead>
@@ -123,12 +124,11 @@
                   <span class="inline-flex px-3 py-1 bg-primary/10 text-primary-container rounded-full text-xs font-bold">Grupo <%= seleccion.grupo.letra %></span>
                 </td>
                 <td class="px-6 py-4 text-center font-bold"><%= seleccion.puntos %></td>
-                <td class="px-6 py-4 text-center text-on-surface-variant font-body-md text-body-md"><%= seleccion.goles_favor %> / <%= seleccion.goles_contra %></td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Activo
-                  </span>
+                <td class="px-6 py-4 text-center text-on-surface-variant font-body-md text-body-md"><%= seleccion.goles_favor %></td>
+                <td class="px-6 py-4 text-center text-on-surface-variant font-body-md text-body-md"><%= seleccion.goles_contra %></td>
+                <td class="px-6 py-4 text-center font-bold text-primary-container">
+                  <% diferencia = seleccion.goles_favor - seleccion.goles_contra %>
+                  <%= diferencia.positive? ? "+#{diferencia}" : diferencia %>
                 </td>
                 <td class="px-6 py-4 text-right">
                   <div class="flex justify-end gap-2">

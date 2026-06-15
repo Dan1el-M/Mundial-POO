@@ -87,8 +87,8 @@
   </div>
 </section>
 
-<div class="mt-8 pt-6 border-t border-outline-variant flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-  <div class="flex items-center gap-2 text-on-surface-variant font-body-md text-body-md">
+<div class="mt-8 pt-6 border-t border-outline-variant flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+  <div class="flex items-center gap-2 text-on-surface-variant font-body-md text-body-md lg:flex-1">
     <span class="material-symbols-outlined">info</span>
     <% if @grupos_incompletos.any? %>
       Completa las selecciones faltantes para habilitar la generación automática.
@@ -97,24 +97,25 @@
     <% end %>
   </div>
 
-  <div class="flex flex-wrap gap-4">
+  <div class="flex flex-row flex-nowrap items-center justify-start lg:justify-end gap-4 overflow-x-auto lg:overflow-visible">
     <%= link_to "Gestionar selecciones",
                 selecciones_path,
-                class: "bg-primary-container text-on-primary-container px-6 py-3 rounded-lg font-title-lg text-title-lg hover:bg-opacity-90 transition-all" %>
+                class: "whitespace-nowrap bg-primary-container text-on-primary-container px-6 py-3 rounded-lg font-title-lg text-title-lg hover:bg-opacity-90 transition-all" %>
 
     <%= link_to "Ver calendario",
                 calendario_partidos_grupo_path,
-                class: "bg-surface-container-high text-primary px-6 py-3 rounded-lg font-title-lg text-title-lg hover:bg-outline-variant transition-all" %>
+                class: "whitespace-nowrap bg-surface-container-high text-primary px-6 py-3 rounded-lg font-title-lg text-title-lg hover:bg-outline-variant transition-all" %>
 
     <% if @grupos_incompletos.any? %>
-      <button class="bg-outline text-white/50 px-8 py-3 rounded-lg font-title-lg text-title-lg cursor-not-allowed" disabled>
+      <button class="whitespace-nowrap bg-outline text-white/50 px-8 py-3 rounded-lg font-title-lg text-title-lg cursor-not-allowed" disabled>
         Generar calendario
       </button>
     <% else %>
       <%= button_to "Generar calendario",
                     generar_calendario_partidos_grupo_path,
                     method: :post,
-                    class: "bg-primary text-white px-8 py-3 rounded-lg font-title-lg text-title-lg" %>
+                    form_class: "inline-flex",
+                    class: "whitespace-nowrap bg-primary text-white px-8 py-3 rounded-lg font-title-lg text-title-lg" %>
     <% end %>
   </div>
 </div>

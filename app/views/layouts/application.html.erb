@@ -7,7 +7,7 @@
     <%= csp_meta_tag %>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800,900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
     <script id="tailwind-config">
@@ -80,14 +80,14 @@
                     "card-gap": "24px"
             },
             "fontFamily": {
-                    "headline-lg": ["Montserrat"],
+                    "headline-lg": ["Inter"],
                     "body-lg": ["Inter"],
-                    "headline-lg-mobile": ["Montserrat"],
+                    "headline-lg-mobile": ["Inter"],
                     "body-md": ["Inter"],
-                    "headline-md": ["Montserrat"],
+                    "headline-md": ["Inter"],
                     "title-lg": ["Inter"],
                     "label-sm": ["Inter"],
-                    "display-lg": ["Montserrat"]
+                    "display-lg": ["Inter"]
             },
             "fontSize": {
                     "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
@@ -109,6 +109,9 @@
           background-color: #F8F9FA;
           font-family: 'Inter', sans-serif;
           color: #1b1b1f;
+      }
+      body *:not(.material-symbols-outlined) {
+          font-family: 'Inter', sans-serif;
       }
       .material-symbols-outlined {
           font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -301,7 +304,7 @@
       <nav class="flex-grow flex flex-col gap-1 overflow-y-auto">
         <%= link_to selecciones_path, class: 'flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all nav-link' do %>
           <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
-          <span class="font-label-sm text-label-sm">Grupos y Equipos</span>
+          <span class="font-label-sm text-label-sm">Grupos y Selecciones</span>
         <% end %>
         <%= link_to partidos_grupo_path, class: 'flex items-center gap-3 text-white hover:bg-primary/10 rounded-full px-4 py-3 mx-2 transition-all nav-link' do %>
           <span class="material-symbols-outlined">calendar_month</span>

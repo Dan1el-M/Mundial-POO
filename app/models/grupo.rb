@@ -55,10 +55,11 @@ class Grupo < ApplicationRecord
   #
   # @return [Array<Seleccion>] selecciones ordenadas
   def tabla_posiciones
-    selecciones.order(
+    selecciones.reorder(
       puntos: :desc,
       diferencia_goles: :desc,
-      goles_favor: :desc
+      goles_favor: :desc,
+      id: :asc
     )
   end
 
