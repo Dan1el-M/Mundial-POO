@@ -66,6 +66,7 @@ class Partido < ApplicationRecord
 
   # Cuando el partido se finaliza, actualiza estadísticas de ambas selecciones
   after_save :actualizar_estadisticas_si_finalizado
+  after_save :cerrar_torneo_si_corresponde
 
   # ──────────────────────────────────────────
   # Scopes
@@ -189,6 +190,18 @@ class Partido < ApplicationRecord
   # ──────────────────────────────────────────
 
   private
+
+  def cerrar_torneo_si_corresponde
+    return unless finalizado? && eliminacion_directa?
+    return unless [Torneo::NUMERO_PARTIDO_TERCER_LUGAR,
+                   Torneo::NUMERO_PARTIDO_FINAL].include?(numero_partido)
+    return if ganador_id.blank?
+
+    torneo_para_cierre = torneo || Torneo.actual
+    update_column(:torneo_id, torneo_para_cierre.id) if torneo_id.blank?
+
+    torneo_para_cierre.determinar_podio!
+  end
 
   # Callback: Cuando un partido se finaliza, recalcula las estadísticas
   # de ambas selecciones (solo en fase de grupos)

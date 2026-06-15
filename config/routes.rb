@@ -3,21 +3,30 @@ Rails.application.routes.draw do
 
   root "posiciones#index"
 
-  resources :selecciones, except: :show
-  resources :grupos
-
-  resources :group_matches, except: :show do
-    collection do
-      post :generate_calendar
-      get :calendar
-    end
-  end
-  resources :knockout_matches, only: %i[index edit update]
-  # Recursos principales en espanol
   resources :grupos do
     member do
       get :tabla
+      get :partidos, as: :partidos_del
+    end
+  end
+
+  resources :selecciones do
+    member do
       get :partidos
+    end
+  end
+
+  get "partidos_grupo", to: "partidos_grupo#index", as: :partidos_grupo
+  post "partidos_grupo/generar_calendario",
+       to: "partidos_grupo#generar_calendario",
+       as: :generar_calendario_partidos_grupo
+  get "partidos_grupo/calendario",
+      to: "partidos_grupo#calendario",
+      as: :calendario_partidos_grupo
+
+  resources :partidos_grupo, except: %i[index show] do
+    member do
+      patch :registrar_resultado
     end
   end
 
@@ -27,7 +36,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :posiciones, only: %i[index show] do
+  resources :selecciones, only: %i[index show] do
     collection do
       get :general
     end
@@ -44,7 +53,6 @@ Rails.application.routes.draw do
     end
   end
 
-  # Eliminacion directa
   resources :eliminacion_directa, only: [:index]
   get "eliminacion_directa/:etapa",
       to: "eliminacion_directa#show",
@@ -53,7 +61,6 @@ Rails.application.routes.draw do
         to: "eliminacion_directa#registrar_resultado",
         as: :registrar_resultado_eliminacion_directa
 
-  # Campeones y podio
   resources :campeones, only: %i[index show] do
     collection do
       get :podio

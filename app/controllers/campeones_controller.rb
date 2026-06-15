@@ -15,7 +15,9 @@ class CampeonesController < ApplicationController
   # Muestra el podio final: campeón, subcampeón, tercer lugar
   # ──────────────────────────────────────────
   def index
-    @torneo = Torneo.first || Torneo.create!(nombre: "Mundial 2026")
+    @torneo = Torneo.actual
+    @torneo.determinar_podio! if @torneo.podio_listo? && !@torneo.finalizado?
+    @torneo.reload
 
     @campeon = @torneo.campeon
     @subcampeon = @torneo.subcampeon
@@ -61,6 +63,7 @@ class CampeonesController < ApplicationController
   # ──────────────────────────────────────────
   def podio
     @torneo = Torneo.first
+    @torneo&.determinar_podio!
 
     if @torneo.nil? || !@torneo.finalizado?
       redirect_to campeones_url, alert: "❌ El torneo aún no está completo"
@@ -115,6 +118,7 @@ class CampeonesController < ApplicationController
   # Verifica que el torneo esté completo
   def verificar_torneo_completo
     torneo = Torneo.first
+    torneo&.determinar_podio!
 
     unless torneo&.finalizado?
       render :en_construccion

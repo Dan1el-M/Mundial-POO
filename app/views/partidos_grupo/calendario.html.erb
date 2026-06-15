@@ -1,0 +1,189 @@
+<% grupo_letra = @grupo_seleccionado&.letra || "A" %>
+
+<header class="mb-section-margin flex flex-col md:flex-row md:items-end justify-between gap-gutter">
+  <div>
+    <h1 class="font-headline-lg text-headline-lg text-primary mb-2">Calendario y resultados</h1>
+    <p class="text-on-surface-variant font-body-lg">Registro de marcadores de la fase de grupos</p>
+  </div>
+
+  <%= link_to partidos_grupo_path,
+              class: "bg-surface-container-high text-primary px-5 py-3 rounded-lg font-bold hover:bg-outline-variant transition-colors flex items-center gap-2" do %>
+    <span class="material-symbols-outlined">arrow_back</span>
+    Volver
+  <% end %>
+</header>
+
+<% if notice.present? %>
+  <div class="mb-gutter bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-xl font-semibold">
+    <%= notice %>
+  </div>
+<% end %>
+
+<% if alert.present? %>
+  <div class="mb-gutter bg-error-container border border-error/20 text-on-error-container px-5 py-4 rounded-xl font-semibold">
+    <%= alert %>
+  </div>
+<% end %>
+
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-gutter">
+  <div class="col-span-1 bg-white p-4 rounded-xl shadow-sm border border-outline-variant">
+    <label class="block font-label-sm text-on-surface-variant mb-2">Filtrar por grupo</label>
+    <%= form_with url: calendario_partidos_grupo_path, method: :get, local: true, class: "flex gap-2" do %>
+      <%= select_tag :grupo_id,
+                     options_from_collection_for_select(@grupos, :id, ->(grupo) { "Grupo #{grupo.letra}" }, @grupo_seleccionado&.id),
+                     class: "w-full bg-surface-container-low border-outline border rounded-lg px-3 py-2 font-body-md focus:ring-2 focus:ring-secondary focus:outline-none" %>
+      <button class="bg-primary text-on-primary px-4 rounded-lg font-bold hover:bg-primary-container transition-all" type="submit">
+        Aplicar
+      </button>
+    <% end %>
+  </div>
+
+  <div class="col-span-2 bg-white p-4 rounded-xl shadow-sm border border-outline-variant">
+    <span class="block font-label-sm text-on-surface-variant mb-2">Grupo seleccionado</span>
+    <div class="flex items-center gap-3">
+      <span class="w-12 h-12 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center font-black text-xl"><%= grupo_letra %></span>
+      <div>
+        <p class="font-bold text-primary">Grupo <%= grupo_letra %></p>
+        <p class="text-sm text-on-surface-variant"><%= pluralize(@partidos.size, "partido") %> programados</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="flex flex-col xl:flex-row gap-card-gap">
+  <section class="flex-1 space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-2">
+      <h3 class="font-headline-md text-headline-md text-primary">Partidos del Grupo <%= grupo_letra %></h3>
+      <span class="text-on-surface-variant font-label-sm uppercase">Fase de grupos</span>
+    </div>
+
+    <% if @partidos.any? %>
+      <% @partidos.each do |partido| %>
+        <% finalizado = partido.finalizado? %>
+        <% local_codigo = partido.seleccion_local.acronimo.presence || partido.seleccion_local.nombre.first(3).upcase %>
+        <% visitante_codigo = partido.seleccion_visitante.acronimo.presence || partido.seleccion_visitante.nombre.first(3).upcase %>
+
+        <article class="bg-white rounded-xl p-6 border-l-4 <%= finalizado ? 'border-l-primary bg-surface-container-low' : 'border-l-outline-variant' %> border border-outline-variant shadow-sm">
+          <div class="flex justify-between items-start mb-6">
+            <span class="<%= finalizado ? 'text-primary' : 'text-on-surface-variant' %> font-label-sm font-bold uppercase">
+              <%= finalizado ? 'Finalizado' : 'Programado' %>
+            </span>
+            <span class="font-bold text-primary">Partido #<%= partido.numero_partido %></span>
+          </div>
+
+          <%= form_with model: partido,
+                        url: registrar_resultado_partidos_grupo_path(partido),
+                        method: :patch,
+                        local: true do |form| %>
+            <%= hidden_field_tag :volver_calendario, "1" %>
+
+            <div class="grid grid-cols-3 items-center gap-4">
+              <div class="text-center">
+                <div class="flex flex-col items-center gap-2 mb-2">
+                  <div class="w-16 h-12 bg-surface-container-highest rounded border border-outline-variant flex items-center justify-center font-black text-xl">
+                    <%= local_codigo.upcase %>
+                  </div>
+                  <span class="font-headline-md text-primary"><%= partido.seleccion_local.nombre %></span>
+                </div>
+                <%= form.number_field :goles_local,
+                                      min: 0,
+                                      required: true,
+                                      value: partido.goles_local,
+                                      placeholder: "-",
+                                      class: "w-20 text-center text-3xl font-black bg-surface-container border-2 border-primary rounded-xl p-2 focus:ring-2 focus:ring-secondary focus:outline-none" %>
+              </div>
+
+              <div class="text-center">
+                <span class="font-display-lg text-outline-variant opacity-50">VS</span>
+              </div>
+
+              <div class="text-center">
+                <div class="flex flex-col items-center gap-2 mb-2">
+                  <div class="w-16 h-12 bg-surface-container-highest rounded border border-outline-variant flex items-center justify-center font-black text-xl">
+                    <%= visitante_codigo.upcase %>
+                  </div>
+                  <span class="font-headline-md text-primary"><%= partido.seleccion_visitante.nombre %></span>
+                </div>
+                <%= form.number_field :goles_visitante,
+                                      min: 0,
+                                      required: true,
+                                      value: partido.goles_visitante,
+                                      placeholder: "-",
+                                      class: "w-20 text-center text-3xl font-black bg-surface-container border-2 border-primary rounded-xl p-2 focus:ring-2 focus:ring-secondary focus:outline-none" %>
+              </div>
+            </div>
+
+            <div class="mt-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-t border-outline-variant pt-4">
+              <span class="<%= finalizado ? 'text-primary' : 'text-on-surface-variant' %> font-label-sm font-bold uppercase flex items-center gap-2">
+                <span class="material-symbols-outlined"><%= finalizado ? 'verified' : 'schedule' %></span>
+                <%= finalizado ? 'Resultado registrado' : 'Pendiente de resultado' %>
+              </span>
+              <button type="submit" class="bg-primary text-on-primary px-6 py-2 rounded-full font-bold hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">save</span>
+                Guardar marcador
+              </button>
+            </div>
+          <% end %>
+        </article>
+      <% end %>
+    <% else %>
+      <div class="bg-white rounded-xl p-8 border border-outline-variant text-center">
+        <span class="material-symbols-outlined text-5xl text-outline mb-3">event_busy</span>
+        <h3 class="font-headline-md text-primary mb-2">Sin partidos programados</h3>
+        <p class="text-on-surface-variant">Genera el calendario cuando todos los grupos tengan sus 4 selecciones.</p>
+      </div>
+    <% end %>
+  </section>
+
+  <aside class="w-full xl:w-96 space-y-gutter">
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-outline-variant">
+      <div class="flex items-center justify-between mb-4">
+        <h4 class="font-headline-md text-primary">Tabla del Grupo <%= grupo_letra %></h4>
+        <span class="material-symbols-outlined text-secondary">leaderboard</span>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mb-6">
+        <% @grupos.each do |grupo| %>
+          <% activo = grupo.id == @grupo_seleccionado&.id %>
+          <%= link_to grupo.letra,
+                      calendario_partidos_grupo_path(grupo_id: grupo.id),
+                      class: "px-3 py-1 rounded-full text-xs font-bold transition-colors #{activo ? 'bg-primary text-on-primary' : 'bg-surface-container-highest text-primary hover:bg-primary-fixed'}" %>
+        <% end %>
+      </div>
+
+      <% if @grupo_seleccionado.present? %>
+        <div class="overflow-hidden">
+          <table class="w-full text-left font-body-md">
+            <thead class="bg-primary text-on-primary">
+              <tr>
+                <th class="py-2 px-3 first:rounded-tl-lg">Selección</th>
+                <th class="py-2 px-1 text-center">PJ</th>
+                <th class="py-2 px-1 text-center">DG</th>
+                <th class="py-2 px-3 last:rounded-tr-lg text-center">PTS</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant">
+              <% @tabla_posiciones.each_with_index do |seleccion, posicion| %>
+                <% clasifica_directo = posicion < 2 %>
+                <% clasifica_tercero = posicion == 2 && @mejores_terceros_ids.include?(seleccion.id) %>
+                <% borde_clasificacion = if clasifica_directo
+                                            "border-l-4 border-l-emerald-500"
+                                          elsif clasifica_tercero
+                                            "border-l-4 border-l-yellow-400"
+                                          else
+                                            "border-l-4 border-l-transparent"
+                                          end %>
+                <tr class="hover:bg-surface-container transition-colors">
+                  <td class="py-3 px-3 font-bold <%= borde_clasificacion %>"><%= seleccion.nombre %></td>
+                  <td class="py-3 px-1 text-center"><%= seleccion.partidos_finalizados.fase_grupos.count %></td>
+                  <td class="py-3 px-1 text-center"><%= seleccion.diferencia_goles.positive? ? "+#{seleccion.diferencia_goles}" : seleccion.diferencia_goles %></td>
+                  <td class="py-3 px-3 text-center font-black text-primary"><%= seleccion.puntos %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  </aside>
+</div>

@@ -35,8 +35,10 @@ class Seleccion < ApplicationRecord
   validates :puntos,
             :goles_favor,
             :goles_contra,
-            :diferencia_goles,
             numericality: { greater_than_or_equal_to: 0, only_integer: true }
+
+  validates :diferencia_goles,
+            numericality: { only_integer: true }
 
   validates :grupo, presence: true
 

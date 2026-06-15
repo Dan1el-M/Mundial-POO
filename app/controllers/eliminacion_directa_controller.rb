@@ -10,7 +10,7 @@
 #   PATCH /eliminacion-directa/:id/resultado → registrar_resultado
 
 class EliminacionDirectaController < ApplicationController
-  before_action :set_etapa, only: [:show, :registrar_resultado]
+  before_action :set_etapa, only: [:show]
   before_action :verificar_fase_grupos_completa, only: [:index, :show]
 
   # ──────────────────────────────────────────
@@ -96,13 +96,16 @@ class EliminacionDirectaController < ApplicationController
       )
 
       ganador = @partido.ganador
-      mensaje = "✅ Resultado registrado. Ganador: #{ganador&.nombre || 'Pendiente'}"
+      @partido.torneo&.determinar_podio!
 
-      redirect_to eliminacion_directa_url(etapa: params[:etapa]),
+      mensaje = "Resultado registrado. Ganador: #{ganador&.nombre || 'Pendiente'}"
+      mensaje += ". Podio definido." if @partido.torneo&.finalizado?
+
+      redirect_to etapa_eliminacion_directa_url(etapa: etapa_para(@partido)),
                   notice: mensaje
     rescue StandardError => e
-      redirect_to eliminacion_directa_url(etapa: params[:etapa]),
-                  alert: "❌ Error al registrar resultado: #{e.message}"
+      redirect_to eliminacion_directa_url,
+                  alert: "Error al registrar resultado: #{e.message}"
     end
   end
 
@@ -157,5 +160,17 @@ class EliminacionDirectaController < ApplicationController
       tercer_lugar: (103..103),
       final: (104..104)
     }[etapa] || (0..0)
+  end
+
+  def etapa_para(partido)
+    case partido.numero_partido
+    when 73..88 then :dieciseisavos
+    when 89..96 then :octavos
+    when 97..100 then :cuartos
+    when 101..102 then :semifinal
+    when 103 then :tercer_lugar
+    when 104 then :final
+    else :dieciseisavos
+    end
   end
 end
