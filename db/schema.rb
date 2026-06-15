@@ -20,6 +20,28 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_15_000100) do
     t.index ["torneo_id"], name: "index_grupos_on_torneo_id"
   end
 
+  create_table "matches", force: :cascade do |t|
+    t.string "type"
+    t.integer "group_id"
+    t.integer "home_team_id", null: false
+    t.integer "away_team_id", null: false
+    t.integer "home_score"
+    t.integer "away_score"
+    t.integer "home_penalty_score"
+    t.integer "away_penalty_score"
+    t.integer "round", default: 0, null: false
+    t.integer "bracket_position"
+    t.integer "winner_team_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["away_team_id"], name: "index_matches_on_away_team_id"
+    t.index ["group_id"], name: "index_matches_on_group_id"
+    t.index ["home_team_id"], name: "index_matches_on_home_team_id"
+    t.index ["round", "bracket_position"], name: "index_matches_on_round_and_bracket_position"
+    t.index ["type"], name: "index_matches_on_type"
+    t.index ["winner_team_id"], name: "index_matches_on_winner_team_id"
+  end
+
   create_table "partidos", force: :cascade do |t|
     t.integer "numero_partido", null: false
     t.string "estado", default: "programado", null: false
@@ -60,6 +82,20 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_15_000100) do
     t.index ["nombre"], name: "index_selecciones_on_nombre", unique: true
   end
 
+  create_table "teams", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "group_id", null: false
+    t.integer "points", default: 0, null: false
+    t.integer "goals_for", default: 0, null: false
+    t.integer "goals_against", default: 0, null: false
+    t.integer "goal_difference", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "acronym"
+    t.index ["group_id"], name: "index_teams_on_group_id"
+    t.index ["name"], name: "index_teams_on_name", unique: true
+  end
+
   create_table "torneos", force: :cascade do |t|
     t.string "nombre", null: false
     t.string "etapa_actual", default: "fase_grupos", null: false
@@ -76,12 +112,17 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_15_000100) do
   end
 
   add_foreign_key "grupos", "torneos"
+  add_foreign_key "matches", "groups"
+  add_foreign_key "matches", "teams", column: "away_team_id"
+  add_foreign_key "matches", "teams", column: "home_team_id"
+  add_foreign_key "matches", "teams", column: "winner_team_id"
   add_foreign_key "partidos", "grupos"
   add_foreign_key "partidos", "selecciones", column: "ganador_id"
   add_foreign_key "partidos", "selecciones", column: "seleccion_local_id"
   add_foreign_key "partidos", "selecciones", column: "seleccion_visitante_id"
   add_foreign_key "partidos", "torneos"
   add_foreign_key "selecciones", "grupos"
+  add_foreign_key "teams", "groups"
   add_foreign_key "torneos", "selecciones", column: "campeon_id"
   add_foreign_key "torneos", "selecciones", column: "subcampeon_id"
   add_foreign_key "torneos", "selecciones", column: "tercero_id"
