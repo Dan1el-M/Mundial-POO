@@ -42,6 +42,8 @@ class Seleccion < ApplicationRecord
 
   validates :grupo, presence: true
 
+  validate :capacidad_grupo
+
   # ──────────────────────────────────────────
   # Callbacks
   # ──────────────────────────────────────────
@@ -235,4 +237,14 @@ class Seleccion < ApplicationRecord
   def calcular_diferencia_goles
     self.diferencia_goles = goles_favor - goles_contra
   end
+<<<<<<< HEAD
 end
+=======
+
+  def capacidad_grupo
+    return if grupo.blank?
+    selecciones_en_grupo = grupo.selecciones.where.not(id: id).count
+    errors.add(:grupo, "ya tiene el máximo de 4 selecciones asignadas") if selecciones_en_grupo >= 4
+  end
+end
+>>>>>>> 00c38aef568b6fc388b6289a60aa6be89d165aef
